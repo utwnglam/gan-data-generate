@@ -18,37 +18,21 @@ else:
 
 for iteration in range(LOOP):
     #
-    #  RANDOM GENERATOR OF CUBE
+    #  RANDOM GENERATE THE LENGTH OF CUBE
     #
     x, y, z = np.indices((Space, Space, Space))
-    centre_x = random.randrange(0, (Space - 1))   # locate from [1-38] so no png contains no cube
-    centre_y = random.randrange(0, (Space - 1))
-    centre_z = random.randrange(0, (Space - 1))
+    length = random.randrange(1, Space+1)
+    print(iteration, length)
 
-    smallest = min((Space - 1 - centre_x), (Space - 1 - centre_y), (Space - 1 - centre_z))
-    length = random.randrange(1, (smallest+1))
-    print(centre_x, centre_y, centre_z, length)
-
-    cube = (x >= centre_x) & (x < (centre_x+length)) \
-        & (y >= centre_y) & (y < (centre_y+length)) \
-        & (z >= centre_z) & (z < (centre_z+length))
-
+    cube = (x < length) & (y < length) & (z < length)
     colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
     colors[cube, :] = (0, 0, 0)
 
     #
     #  TRANSLATING 3D VOXEL TO 2D IMAGE
     #
-    convert = colors
-    convert = np.multiply(convert, 255)
-    #  -----------------------------------------
-    #    UNCOMMENT IT IF YOU NEED TO ENLARGE
-    #  -----------------------------------------
-    # convert = convert.repeat(RATIO, axis=0)   # enlarge the size of array by ratio
-    # convert = convert.repeat(RATIO, axis=1)
-    # convert = convert.repeat(RATIO, axis=2)
-
-    output = convert.reshape((-1, 3))
+    output = np.multiply(colors, 255)
+    output = output.reshape((-1, 3))
     output = np.vstack([output, np.full((ADDITION, 3), 255)])
     output = output.reshape((imgLength, imgLength, 3))
     output = np.uint8(output)   # change it back to integer format
@@ -59,11 +43,60 @@ for iteration in range(LOOP):
     if not os.path.exists('dataSet'):
         os.makedirs('dataSet')
     new = Image.fromarray(output)
-    new.save('dataSet/output' + str(imgLength) + '_' + str(iteration) + ".png")
+    new.save('dataSet/output-' + str(imgLength) + '_' + str(iteration) + ".png")
 
+##############################
+#   GENERATE 3D DATA SET
+##############################
+
+# for iteration in range(LOOP):
+#     #
+#     #  RANDOM GENERATOR OF CUBE
+#     #
+#     x, y, z = np.indices((Space, Space, Space))
+#     centre_x = random.randrange(0, (Space - 1))   # locate from [1-38] so no png contains no cube
+#     centre_y = random.randrange(0, (Space - 1))
+#     centre_z = random.randrange(0, (Space - 1))
 #
+#     smallest = min((Space - 1 - centre_x), (Space - 1 - centre_y), (Space - 1 - centre_z))
+#     length = random.randrange(1, (smallest+1))
+#     print(centre_x, centre_y, centre_z, length)
+#
+#     cube = (x >= centre_x) & (x < (centre_x+length)) \
+#         & (y >= centre_y) & (y < (centre_y+length)) \
+#         & (z >= centre_z) & (z < (centre_z+length))
+#
+#     colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
+#     colors[cube, :] = (0, 0, 0)
+#
+#     #
+#     #  TRANSLATING 3D VOXEL TO 2D IMAGE
+#     #
+#     convert = np.multiply(colors, 255)
+#     #  -----------------------------------------
+#     #    UNCOMMENT IT IF YOU NEED TO ENLARGE
+#     #  -----------------------------------------
+#     # convert = convert.repeat(RATIO, axis=0)   # enlarge the size of array by ratio
+#     # convert = convert.repeat(RATIO, axis=1)
+#     # convert = convert.repeat(RATIO, axis=2)
+#
+#     output = convert.reshape((-1, 3))
+#     output = np.vstack([output, np.full((ADDITION, 3), 255)])
+#     output = output.reshape((imgLength, imgLength, 3))
+#     output = np.uint8(output)   # change it back to integer format
+#
+#     #
+#     #  OUTPUT
+#     #
+#     if not os.path.exists('dataSet'):
+#         os.makedirs('dataSet')
+#     new = Image.fromarray(output)
+#     new.save('dataSet/output' + str(imgLength) + '_' + str(iteration) + ".png")
+
+##############################
 #   GENERATE 2D DATA SET
-#
+##############################
+
 # for iteration in range(LOOP):
 #     #
 #     #  RANDOM GENERATE A CENTRE POSITION
@@ -85,7 +118,7 @@ for iteration in range(LOOP):
 #     output = np.uint8(square)
 #
 #     #
-#     # OUTPUT
+#     #  OUTPUT
 #     #
 #     if not os.path.exists('dataSet'):
 #         os.makedirs('dataSet')

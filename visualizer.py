@@ -13,7 +13,7 @@ TOTAL = RESO * RATIO
 #
 #  OPEN AND CONVERT 2D PNG TO 3D VOXEL ARRAY
 #
-img = Image.open('dataSet/output_5.png')
+img = Image.open('result/00035-sgan-custom-256voxel40x40-4gpu004645.png')
 data = np.array(img)
 data = np.resize(data, (TOTAL, TOTAL, TOTAL, 3))
 #  -----------------------------------------
@@ -25,7 +25,7 @@ data = np.resize(data, (TOTAL, TOTAL, TOTAL, 3))
 #  CHECKING FROM 128 TO 192 LEVEL
 #
 cube = np.zeros((RESO, RESO, RESO), dtype=bool)
-for CutOff in range(128, 192):
+for CutOff in range(240, 253, 5):
     transparent = np.array([CutOff, CutOff, CutOff])
 
     for i in range(data.shape[0]):
