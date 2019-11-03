@@ -3,5 +3,7 @@
 /venv
 
 # result folder
-/result
+/ViewResult
 /dataSet
+/tmpSaving
+/result
