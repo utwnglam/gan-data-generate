@@ -5,8 +5,8 @@ import os
 import sys
 
 Space = 40
-RATIO = 1
-TOTAL = Space * RATIO
+Ratio = 4
+TOTAL = Space * Ratio
 imgLength = 256
 ADDITION = (imgLength * imgLength) - (TOTAL * TOTAL * TOTAL)
 LOOP = 0
@@ -21,29 +21,35 @@ for iteration in range(LOOP):
     #  RANDOM GENERATE THE LENGTH OF CUBE
     #
     x, y, z = np.indices((Space, Space, Space))
-    length = random.randrange(1, Space+1)
+    length = random.randrange(10, 20+1)
     print(iteration, length)
 
-    cube = (x < length) & (y < length) & (z < length)
+    cube = (x >= 10) & (x < (10 + length)) \
+        & (y >= 10) & (y < (10 + length)) \
+        & (z >= 10) & (z < (10 + length))
     colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
     colors[cube, :] = (0, 0, 0)
 
     #
     #  TRANSLATING 3D VOXEL TO 2D IMAGE
     #
-    output = np.multiply(colors, 255)
-    output = output.reshape((-1, 3))
-    output = np.vstack([output, np.full((ADDITION, 3), 255)])
-    output = output.reshape((imgLength, imgLength, 3))
+    convert = np.multiply(colors, 255)
+    convert = convert.reshape((-1, 3))
+    convert = np.vstack([convert, np.full(((imgLength * imgLength) - (Space * Space * Space), 3), 255)])
+    output = convert.reshape((imgLength, imgLength, 3))
+
+    output = output.repeat(Ratio, axis=0)  # enlarge the size of array by ratio
+    output = output.repeat(Ratio, axis=1)
     output = np.uint8(output)   # change it back to integer format
 
     #
     #  OUTPUT
     #
-    if not os.path.exists('dataSet'):
-        os.makedirs('dataSet')
+    filename = 'out1024_space' + str(Space) + '_ratio' + str(Ratio) + '_method3'
+    if not os.path.exists(filename):
+        os.makedirs(filename)
     new = Image.fromarray(output)
-    new.save('dataSet/output-' + str(imgLength) + '_' + str(iteration) + ".png")
+    new.save(filename + '/output_' + str(iteration) + ".png")
 
 ##############################
 #   GENERATE 3D DATA SET

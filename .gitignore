@@ -2,6 +2,7 @@
 .idea
 /venv
 
-# result folder
-/ViewResult
+# folder
 /dataSet
+/ViewResult
+/result
