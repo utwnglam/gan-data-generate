@@ -5,5 +5,12 @@
 # folder
 /dataSet
 /ViewResult
+
+# folder of Joanne
 /voxel_result
 /achieved
+
+# folder of Adam
+/tmpSaving
+/result
+

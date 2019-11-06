@@ -82,16 +82,45 @@ def method2_range255():
         cube = np.zeros((RESO, RESO, RESO), dtype=bool)  # resetting the whole cube array
 
 
+def finding_cut_off(cut_off, file, colors):
+    #
+    #  CHECKING FROM 128 TO cut_off
+    #
+    cube = np.zeros((RESO, RESO, RESO), dtype=bool)
+
+    for CutOff in range(128, cut_off, 10):
+        transparent = np.array([cut_off, cut_off, cut_off])
+
+        for i in range(colors.shape[0]):
+            for j in range(colors.shape[1]):
+                for k in range(colors.shape[2]):
+                    if np.all(colors[i][j][k] <= transparent):
+                        cube[i][j][k] = True
+
+        # colors = np.divide(data, 255)
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.voxels(cube, facecolors=colors, edgecolor='grey')
+
+        if not os.path.exists('ViewResult/' + file[13:-4]):
+            os.makedirs('ViewResult/' + file[13:-4])
+        plt.savefig('ViewResult/' + file[13:-4] + '/view' + str(CutOff) + '.png')
+        # plt.show()
+        cube = np.zeros((RESO, RESO, RESO), dtype=bool)     # resetting the whole cube array
+
+
 def main():
     file_list = []
-    folder_name = ''
+    CutOff = 245
 
     if len(sys.argv) > 1:
         folder_name = sys.argv[1]
         file_list = glob.glob('voxel_result/*' + folder_name + '*.png')
         print(file_list)
+        if len(sys.argv) > 2:
+            CutOff = int(sys.argv[2])
     else:
-        print('#\n#\n#   Please input the target folder as argv[1].\n#\n#')
+        print('#\n#\n#   USAGE: python visualizer.py [DataSet_folder_name] [target_transparency]\n#\n#')
 
     for file in file_list:
         #
@@ -100,40 +129,31 @@ def main():
         img = Image.open(file)
         data = np.array(img)
         data = data[::RATIO, ::RATIO, 0:]
-        data = np.resize(data, (RESO, RESO, RESO, 3))
+        colors = np.resize(data, (RESO, RESO, RESO, 3))
 
-        #
-        #  CHECKING FROM 128 TO 192 LEVEL
-        #
-        cube = np.zeros((RESO, RESO, RESO), dtype=bool)
-        #  ------------------------------------------------
-        #    UNCOMMENT IF YOU HAVE TO LOOP FOR THE CUTOFF
-        #  ------------------------------------------------
-        # for CutOff in range(250, 253, 10):
-        CutOff = 245
-        transparent = np.array([CutOff, CutOff, CutOff])
+        if len(sys.argv) > 2:
+            finding_cut_off(CutOff, file, colors)
+        elif len(sys.argv) > 1:
+            cube = np.zeros((RESO, RESO, RESO), dtype=bool)
+            transparent = np.array([CutOff, CutOff, CutOff])
 
-        for i in range(data.shape[0]):
-            for j in range(data.shape[1]):
-                for k in range(data.shape[2]):
-                    # it is TRUE when all value in the compare result array is TRUE
-                    if np.all(data[i][j][k] <= transparent):
-                        cube[i][j][k] = True
+            for i in range(colors.shape[0]):
+                for j in range(colors.shape[1]):
+                    for k in range(colors.shape[2]):
+                        if np.all(colors[i][j][k] <= transparent):  # return TRUE when all the compare result is TRUE
+                            cube[i][j][k] = True
 
-        # colors = np.divide(data, 255)
+            #
+            #  PLOTTING GRAPH TO SEE VOXEL
+            #
+            fig = plt.figure()
+            ax = fig.gca(projection='3d')
+            ax.voxels(cube, facecolors=colors, edgecolor='grey')
 
-        #
-        #  PLOTTING GRAPH TO SEE VOXEL
-        #
-        fig = plt.figure()
-        ax = fig.gca(projection='3d')
-        ax.voxels(cube, facecolors=data, edgecolor='grey')
-
-        if not os.path.exists('ViewResult'):
-            os.makedirs('ViewResult')
-        plt.savefig('ViewResult/view' + str(CutOff) + '_' + file[13:])
-        # plt.show()
-        # cube = np.zeros((RESO, RESO, RESO), dtype=bool)  # resetting the whole cube array
+            if not os.path.exists('ViewResult'):
+                os.makedirs('ViewResult')
+            plt.savefig('ViewResult/view_' + file[13:])
+            # plt.show()
 
 
 if __name__ == "__main__":
