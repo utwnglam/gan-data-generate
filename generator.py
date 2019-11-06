@@ -45,11 +45,11 @@ for iteration in range(LOOP):
     #
     #  OUTPUT
     #
-    filename = 'out1024_space' + str(Space) + '_ratio' + str(Ratio) + '_method3'
-    if not os.path.exists(filename):
-        os.makedirs(filename)
+    FolderName = 'out1024_space' + str(Space) + '_ratio' + str(Ratio) + '_method3'
+    if not os.path.exists(FolderName):
+        os.makedirs(FolderName)
     new = Image.fromarray(output)
-    new.save(filename + '/output_' + str(iteration) + ".png")
+    new.save(FolderName + '/output_' + str(iteration) + ".png")
 
 ##############################
 #   GENERATE 3D DATA SET

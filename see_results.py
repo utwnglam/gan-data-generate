@@ -17,6 +17,7 @@ import config
 import glob
 import sys
 
+
 def main():
     if len(sys.argv) > 1:
         target_ID_list = []
@@ -63,7 +64,6 @@ def main():
         print("USAGE: add argument(s) as your desire folder that you want to convert")
         print("example: if you want to convert the result folder starts with 00001 and 00002")
         print("input: python see_results.py 1 2")
-        
 
 
 if __name__ == "__main__":
