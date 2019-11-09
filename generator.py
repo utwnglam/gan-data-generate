@@ -9,47 +9,7 @@ Ratio = 4
 TOTAL = Space * Ratio
 imgLength = 256
 ADDITION = (imgLength * imgLength) - (TOTAL * TOTAL * TOTAL)
-LOOP = 0
 
-if len(sys.argv) > 1:
-    LOOP = int(sys.argv[1])
-else:
-    print('#\n#\n# Please input a NUMBER as argv[1],\n#   which is the NUMBER of png you would like to generate.\n#\n#')
-
-for iteration in range(LOOP):
-    #
-    #  RANDOM GENERATE THE LENGTH OF CUBE
-    #
-    x, y, z = np.indices((Space, Space, Space))
-    length = random.randrange(10, 20+1)
-    print(iteration, length)
-
-    cube = (x >= 10) & (x < (10 + length)) \
-        & (y >= 10) & (y < (10 + length)) \
-        & (z >= 10) & (z < (10 + length))
-    colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
-    colors[cube, :] = (0, 0, 0)
-
-    #
-    #  TRANSLATING 3D VOXEL TO 2D IMAGE
-    #
-    convert = np.multiply(colors, 255)
-    convert = convert.reshape((-1, 3))
-    convert = np.vstack([convert, np.full(((imgLength * imgLength) - (Space * Space * Space), 3), 255)])
-    output = convert.reshape((imgLength, imgLength, 3))
-
-    output = output.repeat(Ratio, axis=0)  # enlarge the size of array by ratio
-    output = output.repeat(Ratio, axis=1)
-    output = np.uint8(output)   # change it back to integer format
-
-    #
-    #  OUTPUT
-    #
-    FolderName = 'out1024_space' + str(Space) + '_ratio' + str(Ratio) + '_method3'
-    if not os.path.exists(FolderName):
-        os.makedirs(FolderName)
-    new = Image.fromarray(output)
-    new.save(FolderName + '/output_' + str(iteration) + ".png")
 
 ##############################
 #   GENERATE 3D DATA SET
@@ -130,3 +90,61 @@ for iteration in range(LOOP):
 #         os.makedirs('dataSet')
 #     new = Image.fromarray(output)
 #     new.save('dataSet/output_' + str(iteration) + ".png")
+
+
+def main():
+    loop = 0
+    method = 'x-axis'
+
+    if len(sys.argv) > 1:
+        loop = int(sys.argv[1])
+    else:
+        print('#\n#\n# Please input a NUMBER as argv[1],\n' +
+              '#   which is the NUMBER of png you would like to generate.\n#\n#')
+
+    for iteration in range(loop):
+        #
+        #  RANDOM GENERATE THE LENGTH OF CUBE
+        #
+        x, y, z = np.indices((Space, Space, Space))
+
+        if method is 'length':
+            length = random.randrange(10, 20 + 1)
+            print(iteration, length)
+            cube = (x >= 10) & (x < (10 + length)) \
+                & (y >= 10) & (y < (10 + length)) \
+                & (z >= 10) & (z < (10 + length))
+        elif method is 'x-axis':
+            x_axis = random.randrange(0, 24 + 1)
+            print(iteration, x_axis)
+            cube = (x >= x_axis) & (x < (15 + x_axis)) \
+                & (y >= 10) & (y < (15 + 10)) \
+                & (z >= 10) & (z < (15 + 10))
+
+        colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
+        colors[cube, :] = (0, 0, 0)
+
+        #
+        #  TRANSLATING 3D VOXEL TO 2D IMAGE
+        #
+        convert = np.multiply(colors, 255)
+        convert = convert.reshape((-1, 3))
+        convert = np.vstack([convert, np.full(((imgLength * imgLength) - (Space * Space * Space), 3), 255)])
+        output = convert.reshape((imgLength, imgLength, 3))
+
+        output = output.repeat(Ratio, axis=0)  # enlarge the size of array by ratio
+        output = output.repeat(Ratio, axis=1)
+        output = np.uint8(output)  # change it back to integer format
+
+        #
+        #  OUTPUT
+        #
+        folder_name = 'out1024_space' + str(Space) + '_ratio' + str(Ratio) + '_method-X-axis'
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+        new = Image.fromarray(output)
+        new.save(folder_name + '/output_' + str(iteration) + ".png")
+
+
+if __name__ == "__main__":
+    main()
