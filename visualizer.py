@@ -86,9 +86,9 @@ def finding_cut_off(cut_off, file, colors):
     #
     #  CHECKING FROM 128 TO cut_off
     #
-    for CutOff in range(128, cut_off, 10):
+    for iteration in range(128, cut_off, 10):
         cube = np.zeros((RESO, RESO, RESO), dtype=bool)
-        transparent = np.array([cut_off, cut_off, cut_off])
+        transparent = np.array([iteration, iteration, iteration])
 
         for i in range(colors.shape[0]):
             for j in range(colors.shape[1]):
@@ -96,19 +96,17 @@ def finding_cut_off(cut_off, file, colors):
                     if np.all(colors[i][j][k] <= transparent):
                         cube[i][j][k] = True
 
-        colors = colors / 255.0
         fig = plt.figure()
         ax = fig.gca(projection='3d')
-        ax.voxels(cube, facecolors=colors)
-
+        ax.voxels(cube, facecolors=(colors / 255.0))
         if not os.path.exists('ViewResult/' + file[13:-4]):
             os.makedirs('ViewResult/' + file[13:-4])
-        plt.savefig('ViewResult/' + file[13:-4] + '/view' + str(CutOff) + '.png')
+        plt.savefig('ViewResult/' + file[13:-4] + '/view' + str(iteration) + '.png')
 
 
 def main():
     file_list = []
-    CutOff = 198
+    CutOff = 138
 
     if len(sys.argv) > 1:
         folder_name = sys.argv[1]
@@ -128,9 +126,9 @@ def main():
         data = data[::RATIO, ::RATIO, 0:]
         colors = np.resize(data, (RESO, RESO, RESO, 3))
 
-        if len(sys.argv) > 2:
+        if len(sys.argv) == 3:
             finding_cut_off(CutOff, file, colors)
-        elif len(sys.argv) > 1:
+        elif len(sys.argv) == 2:
             cube = np.zeros((RESO, RESO, RESO), dtype=bool)
             transparent = np.array([CutOff, CutOff, CutOff])
 
@@ -150,8 +148,7 @@ def main():
 
             if not os.path.exists('ViewResult'):
                 os.makedirs('ViewResult')
-            # plt.savefig('ViewResult/view_' + str(CutOff) + file[13:])
-            plt.savefig('ViewResult/view' + str(CutOff) + '.png')
+            plt.savefig('ViewResult/view_' + str(CutOff) + file[13:])
             # plt.show()
 
 
