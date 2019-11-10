@@ -94,6 +94,9 @@ ADDITION = (imgLength * imgLength) - (TOTAL * TOTAL * TOTAL)
 
 def main():
     loop = 0
+    #  ------------------------------------------------------
+    #    CHANGE IT TO 'length' TO GET ANOTHER TYPE OF PNG
+    #  ------------------------------------------------------
     method = 'x-axis'
 
     if len(sys.argv) > 1:

@@ -86,9 +86,8 @@ def finding_cut_off(cut_off, file, colors):
     #
     #  CHECKING FROM 128 TO cut_off
     #
-    cube = np.zeros((RESO, RESO, RESO), dtype=bool)
-
     for CutOff in range(128, cut_off, 10):
+        cube = np.zeros((RESO, RESO, RESO), dtype=bool)
         transparent = np.array([cut_off, cut_off, cut_off])
 
         for i in range(colors.shape[0]):
@@ -97,21 +96,19 @@ def finding_cut_off(cut_off, file, colors):
                     if np.all(colors[i][j][k] <= transparent):
                         cube[i][j][k] = True
 
-        # colors = np.divide(data, 255)
+        colors = colors / 255.0
         fig = plt.figure()
         ax = fig.gca(projection='3d')
-        ax.voxels(cube, facecolors=colors, edgecolor='grey')
+        ax.voxels(cube, facecolors=colors)
 
         if not os.path.exists('ViewResult/' + file[13:-4]):
             os.makedirs('ViewResult/' + file[13:-4])
         plt.savefig('ViewResult/' + file[13:-4] + '/view' + str(CutOff) + '.png')
-        # plt.show()
-        cube = np.zeros((RESO, RESO, RESO), dtype=bool)     # resetting the whole cube array
 
 
 def main():
     file_list = []
-    CutOff = 245
+    CutOff = 198
 
     if len(sys.argv) > 1:
         folder_name = sys.argv[1]
@@ -146,13 +143,15 @@ def main():
             #
             #  PLOTTING GRAPH TO SEE VOXEL
             #
+            colors = colors / 255.0
             fig = plt.figure()
             ax = fig.gca(projection='3d')
-            ax.voxels(cube, facecolors=colors, edgecolor='grey')
+            ax.voxels(cube, facecolors=colors)
 
             if not os.path.exists('ViewResult'):
                 os.makedirs('ViewResult')
-            plt.savefig('ViewResult/view_' + file[13:])
+            # plt.savefig('ViewResult/view_' + str(CutOff) + file[13:])
+            plt.savefig('ViewResult/view' + str(CutOff) + '.png')
             # plt.show()
 
 
