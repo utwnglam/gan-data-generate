@@ -97,13 +97,14 @@ def main():
     #  ------------------------------------------------------
     #    CHANGE IT TO 'length' TO GET ANOTHER TYPE OF PNG
     #  ------------------------------------------------------
-    method = 'x-axis'
+    method = ''
 
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 2:
         loop = int(sys.argv[1])
+        method = sys.argv[2]
     else:
-        print('#\n#\n# Please input a NUMBER as argv[1],\n' +
-              '#   which is the NUMBER of png you would like to generate.\n#\n#')
+        print('#\n#   USAGE: python generator.py [Number_of_png] [Data_set_type]\n' +
+              '#   * ALL ARGV IS COMPULSORY.\n#')
 
     for iteration in range(loop):
         #
@@ -111,18 +112,30 @@ def main():
         #
         x, y, z = np.indices((Space, Space, Space))
 
-        if method is 'length':
+        if method == 'len':
             length = random.randrange(10, 20 + 1)
             print(iteration, length)
-            cube = (x >= 10) & (x < (10 + length)) \
-                & (y >= 10) & (y < (10 + length)) \
-                & (z >= 10) & (z < (10 + length))
-        elif method is 'x-axis':
-            x_axis = random.randrange(0, 24 + 1)
+            cube = (x >= 10) & (x < (length + 10)) \
+                & (y >= 10) & (y < (length + 10)) \
+                & (z >= 10) & (z < (length + 10))
+        elif method == 'x':
+            x_axis = random.randrange(0, 20)
             print(iteration, x_axis)
-            cube = (x >= x_axis) & (x < (15 + x_axis)) \
-                & (y >= 10) & (y < (15 + 10)) \
-                & (z >= 10) & (z < (15 + 10))
+            cube = (x >= x_axis) & (x < (20 + x_axis)) \
+                & (y >= 10) & (y < (20 + 10)) \
+                & (z >= 10) & (z < (20 + 10))
+        elif method == 'y':
+            y_axis = random.randrange(0, 20)
+            print(iteration, y_axis)
+            cube = (x >= 10) & (x < (20 + 10)) \
+                & (y >= y_axis) & (y < (20 + y_axis)) \
+                & (z >= 10) & (z < (20 + 10))
+        elif method == 'z':
+            z_axis = random.randrange(0, 20)
+            print(iteration, z_axis)
+            cube = (x >= 10) & (x < (20 + 10)) \
+                & (y >= 10) & (y < (20 + 10)) \
+                & (z >= z_axis) & (z < (20 + z_axis))
 
         colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
         colors[cube, :] = (0, 0, 0)
@@ -142,7 +155,7 @@ def main():
         #
         #  OUTPUT
         #
-        folder_name = 'out1024_space' + str(Space) + '_ratio' + str(Ratio) + '_method-X-axis'
+        folder_name = 'out1024_space' + str(Space) + '_ratio' + str(Ratio) + '_method-' + method
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
         new = Image.fromarray(output)

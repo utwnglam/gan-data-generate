@@ -115,7 +115,7 @@ def main():
         if len(sys.argv) > 2:
             CutOff = int(sys.argv[2])
     else:
-        print('#\n#\n#   USAGE: python visualizer.py [DataSet_folder_name] [target_transparency]\n#\n#')
+        print('#\n#   USAGE: python visualizer.py [DataSet_folder_name] [Target_transparency]\n#')
 
     for file in file_list:
         #
