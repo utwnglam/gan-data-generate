@@ -94,9 +94,6 @@ ADDITION = (imgLength * imgLength) - (TOTAL * TOTAL * TOTAL)
 
 def main():
     loop = 0
-    #  ------------------------------------------------------
-    #    CHANGE IT TO 'length' TO GET ANOTHER TYPE OF PNG
-    #  ------------------------------------------------------
     method = ''
 
     if len(sys.argv) > 2:
@@ -136,12 +133,26 @@ def main():
             cube = (x >= 10) & (x < (20 + 10)) \
                 & (y >= 10) & (y < (20 + 10)) \
                 & (z >= z_axis) & (z < (20 + z_axis))
+        elif method == 'color':
+            cube = (x >= 10) & (x < (20 + 10)) \
+                & (y >= 10) & (y < (20 + 10)) \
+                & (z >= 10) & (z < (20 + 10))
 
         colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
-        colors[cube, :] = (0, 0, 0)
 
         #
-        #  TRANSLATING 3D VOXEL TO 2D IMAGE
+        #   COLOUR SAMPLE
+        #
+        sequence = [0, 32, 64, 96, 128]
+        surface = (random.choice(sequence), random.choice(sequence), random.choice(sequence))
+        if method == 'color':
+            print(iteration, surface)
+            colors[cube, :] = surface
+        else:
+            colors[cube, :] = (0, 0, 0)
+
+        #
+        #   TRANSLATING 3D VOXEL TO 2D IMAGE
         #
         convert = np.multiply(colors, 255)
         convert = convert.reshape((-1, 3))
