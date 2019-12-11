@@ -98,7 +98,7 @@ def finding_cut_off(cut_off, file, colors):
 
         fig = plt.figure()
         ax = fig.gca(projection='3d')
-        ax.voxels(cube, facecolors=(colors / 255.0))
+        ax.voxels(cube, facecolors=(colors / 256.0))
         if not os.path.exists('ViewResult/' + file[13:-4]):
             os.makedirs('ViewResult/' + file[13:-4])
         plt.savefig('ViewResult/' + file[13:-4] + '/view' + str(iteration) + '.png')
@@ -106,16 +106,18 @@ def finding_cut_off(cut_off, file, colors):
 
 def main():
     file_list = []
-    CutOff = 138
+    view_angle = ''
+    CutOff = 128
 
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 2:
         folder_name = sys.argv[1]
         file_list = glob.glob('voxel_result/*' + folder_name + '*.png')
         print(file_list)
-        if len(sys.argv) > 2:
-            CutOff = int(sys.argv[2])
+        view_angle = sys.argv[2]
+        if len(sys.argv) > 3:
+            CutOff = int(sys.argv[3])
     else:
-        print('#\n#   USAGE: python visualizer.py [DataSet_folder_name] [Target_transparency]\n#')
+        print('#\n#   USAGE: python visualizer.py [DataSet_folder_name] [Viewing_angle] [Target_transparency]\n#')
 
     for file in file_list:
         #
@@ -126,9 +128,9 @@ def main():
         data = data[::RATIO, ::RATIO, 0:]
         colors = np.resize(data, (RESO, RESO, RESO, 3))
 
-        if len(sys.argv) == 3:
+        if len(sys.argv) == 4:
             finding_cut_off(CutOff, file, colors)
-        elif len(sys.argv) == 2:
+        elif len(sys.argv) == 3:
             cube = np.zeros((RESO, RESO, RESO), dtype=bool)
             transparent = np.array([CutOff, CutOff, CutOff])
 
@@ -141,14 +143,23 @@ def main():
             #
             #  PLOTTING GRAPH TO SEE VOXEL
             #
-            colors = colors / 255.0
+            colors = (colors / 256.0) * 2
             fig = plt.figure()
             ax = fig.gca(projection='3d')
             ax.voxels(cube, facecolors=colors)
+            #   -------------------
+            #       view angle
+            #   -------------------
+            if view_angle == 'x':
+                ax.view_init(10, -85)
+            elif view_angle == 'y':
+                ax.view_init(10, 8)
+            elif view_angle == 'z':
+                ax.view_init(15, 38)
 
             if not os.path.exists('ViewResult'):
                 os.makedirs('ViewResult')
-            plt.savefig('ViewResult/view_' + str(CutOff) + file[13:])
+            plt.savefig('ViewResult/view_' + str(CutOff) + '_' + view_angle + '_' + file[13:])
             # plt.show()
 
 

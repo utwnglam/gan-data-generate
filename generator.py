@@ -95,12 +95,17 @@ ADDITION = (imgLength * imgLength) - (TOTAL * TOTAL * TOTAL)
 def main():
     loop = 0
     method = ''
+    color_or_not = False
 
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 3:
         loop = int(sys.argv[1])
         method = sys.argv[2]
+        if sys.argv[3] == 'yes':
+            color_or_not = True
+        elif sys.argv[3] == 'no':
+            color_or_not = False
     else:
-        print('#\n#   USAGE: python generator.py [Number_of_png] [Data_set_type]\n' +
+        print('#\n#   USAGE: python generator.py [Number_of_png] [axis_type] [need_color_or_not]\n' +
               '#   * ALL ARGV IS COMPULSORY.\n#')
 
     for iteration in range(loop):
@@ -133,19 +138,20 @@ def main():
             cube = (x >= 10) & (x < (20 + 10)) \
                 & (y >= 10) & (y < (20 + 10)) \
                 & (z >= z_axis) & (z < (20 + z_axis))
-        elif method == 'color':
+        elif method == 'fix':
             cube = (x >= 10) & (x < (20 + 10)) \
                 & (y >= 10) & (y < (20 + 10)) \
                 & (z >= 10) & (z < (20 + 10))
 
         colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
+        colors = np.multiply(colors, 255)
 
         #
         #   COLOUR SAMPLE
         #
-        sequence = [0, 32, 64, 96, 128]
-        surface = (random.choice(sequence), random.choice(sequence), random.choice(sequence))
-        if method == 'color':
+        if color_or_not:
+            sequence = [0, 32, 64, 96, 128]
+            surface = (random.choice(sequence), random.choice(sequence), random.choice(sequence))
             print(iteration, surface)
             colors[cube, :] = surface
         else:
@@ -154,8 +160,7 @@ def main():
         #
         #   TRANSLATING 3D VOXEL TO 2D IMAGE
         #
-        convert = np.multiply(colors, 255)
-        convert = convert.reshape((-1, 3))
+        convert = colors.reshape((-1, 3))
         convert = np.vstack([convert, np.full(((imgLength * imgLength) - (Space * Space * Space), 3), 255)])
         output = convert.reshape((imgLength, imgLength, 3))
 
@@ -166,7 +171,9 @@ def main():
         #
         #  OUTPUT
         #
-        folder_name = 'out1024_space' + str(Space) + '_ratio' + str(Ratio) + '_method-' + method
+        folder_name = 'space' + str(Space) + '_ratio' + str(Ratio) + '_method-' + method
+        if color_or_not:
+            folder_name = folder_name + '_withColor'
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
         new = Image.fromarray(output)
