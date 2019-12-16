@@ -147,15 +147,18 @@ def main():
             fig = plt.figure()
             ax = fig.gca(projection='3d')
             ax.voxels(cube, facecolors=colors)
+
             #   -------------------
             #       view angle
             #   -------------------
             if view_angle == 'x':
-                ax.view_init(10, -85)
-            elif view_angle == 'y':
-                ax.view_init(10, 8)
-            elif view_angle == 'z':
-                ax.view_init(15, 38)
+                # ax.view_init(10, -85)
+                ax.view_init(0, -90)
+            else:
+                # ax.view_init(10, 8)
+                ax.view_init(0, 0)
+            # elif view_angle == 'z':
+            #     ax.view_init(15, 38)
 
             if not os.path.exists('ViewResult'):
                 os.makedirs('ViewResult')
