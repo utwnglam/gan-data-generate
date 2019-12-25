@@ -142,6 +142,13 @@ def main():
             cube = (x >= 10) & (x < (20 + 10)) \
                 & (y >= 10) & (y < (20 + 10)) \
                 & (z >= 10) & (z < (20 + 10))
+        elif method == 'xyz':
+            x_axis = random.randrange(0, 20)
+            y_axis = random.randrange(0, 20)
+            z_axis = random.randrange(0, 20)
+            cube = (x >= x_axis) & (x < (20 + x_axis)) \
+                & (y >= y_axis) & (y < (20 + y_axis)) \
+                & (z >= z_axis) & (z < (20 + z_axis))
 
         colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
         colors = np.multiply(colors, 255)
