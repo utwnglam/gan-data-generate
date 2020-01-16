@@ -11,6 +11,7 @@ import glob
 RESO = 40
 RATIO = 4
 TOTAL = RESO * RATIO
+CutOff = 192
 
 
 def method2_range100():
@@ -45,41 +46,65 @@ def method2_range100():
 
 
 def method2_range255():
-    img = Image.open('result/00035-sgan-custom-256voxel40x40-4gpu004705.png')
+    img = Image.open('voxel_result/output256_6.png')
     data = np.array(img)
     data = np.resize(data, (TOTAL, TOTAL, TOTAL, 3))
-    #  -----------------------------------------
-    #    UNCOMMENT IT IF YOU HAVE ENLARGED
-    #  -----------------------------------------
-    # data = data[::RATIO, ::RATIO, ::RATIO, 0:]
+
     cube = np.zeros((RESO, RESO, RESO), dtype=bool)
+    transparent = np.array([CutOff, CutOff, CutOff])
+
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            for k in range(data.shape[2]):
+                # it is TRUE when all value in the compare result array is TRUE
+                if np.all(data[i][j][k] <= transparent):
+                    cube[i][j][k] = True
+
+    colors = np.divide(data, 255)
 
     #
-    #  CHECKING FROM CERTAIN LEVEL
+    #  PLOTTING GRAPH TO SEE VOXEL
     #
-    for CutOff in range(250, 253, 10):
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.voxels(cube, facecolors=colors)
+
+    if not os.path.exists('ViewResult'):
+        os.makedirs('ViewResult')
+    plt.savefig('ViewResult/view_' + str(CutOff) + '_6.png')
+
+
+def method_1():
+    file_list = []
+
+    if len(sys.argv) > 1:
+        folder_name = sys.argv[1]
+        file_list = glob.glob('voxel_result/*' + folder_name + '*.png')
+        print(file_list)
+
+    for file in file_list:
+        img = Image.open(file)
+        data = np.array(img)
+        data = np.resize(data, (TOTAL, TOTAL, TOTAL, 3))
+        colors = data[::RATIO, ::RATIO, ::RATIO, 0:]
+
+        cube = np.zeros((RESO, RESO, RESO), dtype=bool)
         transparent = np.array([CutOff, CutOff, CutOff])
-        for i in range(data.shape[0]):
-            for j in range(data.shape[1]):
-                for k in range(data.shape[2]):
-                    # it is TRUE when all value in the compare result array is TRUE
-                    if np.all(data[i][j][k] <= transparent):
+
+        for i in range(colors.shape[0]):
+            for j in range(colors.shape[1]):
+                for k in range(colors.shape[2]):
+                    if np.all(colors[i][j][k] <= transparent):  # return TRUE when all the compare result is TRUE
                         cube[i][j][k] = True
 
-        # colors = np.divide(data, 255)
-
-        #
-        #  PLOTTING GRAPH TO SEE VOXEL
-        #
+        colors = colors / 256.0
         fig = plt.figure()
         ax = fig.gca(projection='3d')
-        ax.voxels(cube, facecolors=data, edgecolor='grey')
+        ax.voxels(cube, facecolors=colors)
 
         if not os.path.exists('ViewResult'):
             os.makedirs('ViewResult')
-        plt.savefig('ViewResult/view_' + str(CutOff) + '.png')
-        # plt.show()
-        cube = np.zeros((RESO, RESO, RESO), dtype=bool)  # resetting the whole cube array
+        plt.savefig('ViewResult/view_' + str(CutOff) + '_' + file[13:])
 
 
 def finding_cut_off(cut_off, file, colors):
@@ -107,7 +132,7 @@ def finding_cut_off(cut_off, file, colors):
 def main():
     file_list = []
     view_angle = ''
-    CutOff = 128
+    CutOff = 192
 
     if len(sys.argv) > 2:
         folder_name = sys.argv[1]
@@ -143,7 +168,7 @@ def main():
             #
             #  PLOTTING GRAPH TO SEE VOXEL
             #
-            colors = (colors / 256.0) * 2
+            colors = (colors / 256.0)
             fig = plt.figure()
             ax = fig.gca(projection='3d')
             ax.voxels(cube, facecolors=colors)
@@ -154,11 +179,11 @@ def main():
             if view_angle == 'x':
                 # ax.view_init(10, -85)
                 ax.view_init(0, -90)
-            else:
+            elif view_angle == 'y':
                 # ax.view_init(10, 8)
                 ax.view_init(0, 0)
-            # elif view_angle == 'z':
-            #     ax.view_init(15, 38)
+            elif view_angle == 'z':
+                ax.view_init(5, 38)
 
             if not os.path.exists('ViewResult'):
                 os.makedirs('ViewResult')

@@ -11,9 +11,56 @@ imgLength = 256
 ADDITION = (imgLength * imgLength) - (TOTAL * TOTAL * TOTAL)
 
 
-##############################
-#   GENERATE 3D DATA SET
-##############################
+def version_one():
+    RESO = 30
+    RATIO = 3
+    TOTAL = RESO * RATIO
+    ADDITION = (1024 * 1024) - (TOTAL * TOTAL * TOTAL)
+    LOOP = 0
+
+    for iteration in range(LOOP):
+        #
+        # RANDOM GENERATOR OF CUBE
+        #
+        x, y, z = np.indices((RESO, RESO, RESO))
+        range_up = random.randint(5, 10)
+        range_down = random.randint(20, 25)
+        print(range_up, range_down, iteration)
+        cube = (x >= range_up) & (x < range_down) & (y >= range_up) & (y < range_down) & (z >= range_up) & (
+                z < range_down)
+
+        colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
+        colors[cube, :] = (0, 0, 0)
+
+        #
+        # TRANSLATING 3D VOXEL TO 2D IMAGE
+        #
+        convert = colors
+        for i in range(convert.shape[0]):
+            for j in range(convert.shape[1]):
+                convert[i][j] = convert[i][j] * 255
+
+        convert = convert.repeat(RATIO, axis=0)  # enlarge the size of array by ratio
+        convert = convert.repeat(RATIO, axis=1)
+        convert = convert.repeat(RATIO, axis=2)
+
+        output = convert.reshape((-1, 3))
+        output = np.vstack([output, np.full((ADDITION, 3), 255)])
+        output = output.reshape((1024, 1024, 3))
+        output = np.uint8(output)  # change it back to integer format
+
+        #
+        # OUTPUT
+        #
+        if not os.path.exists('result'):
+            os.makedirs('result')
+        new = Image.fromarray(output)
+        new.save('result/output_' + str(iteration) + ".png")
+
+
+#####################################
+#   GENERATE 3D DATA SET version 2
+#####################################
 
 # for iteration in range(LOOP):
 #     #
