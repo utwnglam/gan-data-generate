@@ -8,8 +8,8 @@ import os
 import sys
 import glob
 
-RESO = 40
-RATIO = 4
+RESO = 64
+RATIO = 2
 TOTAL = RESO * RATIO
 CutOff = 192
 
@@ -187,7 +187,7 @@ def main():
 
             if not os.path.exists('ViewResult'):
                 os.makedirs('ViewResult')
-            plt.savefig('ViewResult/view_' + str(CutOff) + '_' + view_angle + '_' + file[13:])
+            plt.savefig('ViewResult/view' + view_angle + '_' + file[13:])
             # plt.show()
 
 

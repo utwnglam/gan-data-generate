@@ -293,7 +293,7 @@ def main():
                 & (y >= y_axis) & (y < (32 + y_axis)) \
                 & (z >= z_axis) & (z < (32 + z_axis))
 
-        colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
+        colors = np.ones(cube.shape + (3,))
         colors = np.multiply(colors, 255)
 
         if color_or_not:
@@ -307,9 +307,9 @@ def main():
         convert = colors.reshape((-1, 3))
         output = convert.reshape((imgLength, imgLength, 3))
 
-        output = output.repeat(Ratio, axis=0)  # enlarge the size of array by ratio
+        output = output.repeat(Ratio, axis=0)
         output = output.repeat(Ratio, axis=1)
-        output = np.uint8(output)  # change it back to integer format
+        output = np.uint8(output)
 
         folder_name = 'space' + str(Space) + '_ratio' + str(Ratio) + '_method' + method
         if color_or_not:
