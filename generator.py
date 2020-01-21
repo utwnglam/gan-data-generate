@@ -4,10 +4,10 @@ import random
 import os
 import sys
 
-Space = 40
-Ratio = 4
+Space = 64
+Ratio = 2
 TOTAL = Space * Ratio
-imgLength = 256
+imgLength = 512
 ADDITION = (imgLength * imgLength) - (TOTAL * TOTAL * TOTAL)
 
 
@@ -139,7 +139,7 @@ def version_one():
 #     new.save('dataSet/output_' + str(iteration) + ".png")
 
 
-def main():
+def version_three():
     loop = 0
     method = ''
     color_or_not = False
@@ -165,37 +165,37 @@ def main():
             length = random.randrange(10, 20 + 1)
             print(iteration, length)
             cube = (x >= 10) & (x < (length + 10)) \
-                & (y >= 10) & (y < (length + 10)) \
-                & (z >= 10) & (z < (length + 10))
+                   & (y >= 10) & (y < (length + 10)) \
+                   & (z >= 10) & (z < (length + 10))
         elif method == 'x':
             x_axis = random.randrange(0, 20)
             print(iteration, x_axis)
             cube = (x >= x_axis) & (x < (20 + x_axis)) \
-                & (y >= 10) & (y < (20 + 10)) \
-                & (z >= 10) & (z < (20 + 10))
+                   & (y >= 10) & (y < (20 + 10)) \
+                   & (z >= 10) & (z < (20 + 10))
         elif method == 'y':
             y_axis = random.randrange(0, 20)
             print(iteration, y_axis)
             cube = (x >= 10) & (x < (20 + 10)) \
-                & (y >= y_axis) & (y < (20 + y_axis)) \
-                & (z >= 10) & (z < (20 + 10))
+                   & (y >= y_axis) & (y < (20 + y_axis)) \
+                   & (z >= 10) & (z < (20 + 10))
         elif method == 'z':
             z_axis = random.randrange(0, 20)
             print(iteration, z_axis)
             cube = (x >= 10) & (x < (20 + 10)) \
-                & (y >= 10) & (y < (20 + 10)) \
-                & (z >= z_axis) & (z < (20 + z_axis))
+                   & (y >= 10) & (y < (20 + 10)) \
+                   & (z >= z_axis) & (z < (20 + z_axis))
         elif method == 'fix':
             cube = (x >= 10) & (x < (20 + 10)) \
-                & (y >= 10) & (y < (20 + 10)) \
-                & (z >= 10) & (z < (20 + 10))
+                   & (y >= 10) & (y < (20 + 10)) \
+                   & (z >= 10) & (z < (20 + 10))
         elif method == 'xyz':
             x_axis = random.randrange(0, 20)
             y_axis = random.randrange(0, 20)
             z_axis = random.randrange(0, 20)
             cube = (x >= x_axis) & (x < (20 + x_axis)) \
-                & (y >= y_axis) & (y < (20 + y_axis)) \
-                & (z >= z_axis) & (z < (20 + z_axis))
+                   & (y >= y_axis) & (y < (20 + y_axis)) \
+                   & (z >= z_axis) & (z < (20 + z_axis))
 
         colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
         colors = np.multiply(colors, 255)
@@ -228,6 +228,94 @@ def main():
         folder_name = 'space' + str(Space) + '_ratio' + str(Ratio) + '_method-' + method
         if color_or_not:
             folder_name = folder_name + '_withColor'
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+        new = Image.fromarray(output)
+        new.save(folder_name + '/output_' + str(iteration) + ".png")
+
+
+def main():
+    loop = 0
+    method = ''
+    color_or_not = False
+    edge = 16
+
+    if len(sys.argv) > 3:
+        loop = int(sys.argv[1])
+        method = sys.argv[2]
+        if sys.argv[3] == 'yes':
+            color_or_not = True
+        elif sys.argv[3] == 'no':
+            color_or_not = False
+    else:
+        print('#\n#   USAGE: python generator.py [Number_of_png] [method_type] [need_color_or_not]\n' +
+              '#   method_type: len/ x/ y/ z/ xyz/ fix\n' +
+              '#   need_color_or_not: yes/ no\n' +
+              '#   * ALL ARGV IS COMPULSORY.\n#')
+
+    for iteration in range(loop):
+        x, y, z = np.indices((Space, Space, Space))
+
+        if method == 'len':
+            length = random.randrange(16, 48 + 1)
+            print(iteration, length)
+            cube = (x >= edge) & (x < (length + edge)) \
+                & (y >= edge) & (y < (length + edge)) \
+                & (z >= edge) & (z < (length + edge))
+        elif method == 'x':
+            x_axis = random.randrange(0, 32)
+            print(iteration, x_axis)
+            cube = (x >= x_axis) & (x < (32 + x_axis)) \
+                & (y >= edge) & (y < (32 + edge)) \
+                & (z >= edge) & (z < (32 + edge))
+        elif method == 'y':
+            y_axis = random.randrange(0, 32)
+            print(iteration, y_axis)
+            cube = (x >= edge) & (x < (32 + edge)) \
+                & (y >= y_axis) & (y < (32 + y_axis)) \
+                & (z >= edge) & (z < (32 + edge))
+        elif method == 'z':
+            z_axis = random.randrange(0, 32)
+            print(iteration, z_axis)
+            cube = (x >= edge) & (x < (32 + edge)) \
+                & (y >= edge) & (y < (32 + edge)) \
+                & (z >= z_axis) & (z < (32 + z_axis))
+        elif method == 'fix':
+            cube = (x >= edge) & (x < (32 + edge)) \
+                & (y >= edge) & (y < (32 + edge)) \
+                & (z >= edge) & (z < (32 + edge))
+        elif method == 'xyz':
+            x_axis = random.randrange(0, 32)
+            y_axis = random.randrange(0, 32)
+            z_axis = random.randrange(0, 32)
+            print(iteration, x_axis, y_axis, z_axis)
+            cube = (x >= x_axis) & (x < (32 + x_axis)) \
+                & (y >= y_axis) & (y < (32 + y_axis)) \
+                & (z >= z_axis) & (z < (32 + z_axis))
+
+        colors = np.ones(cube.shape + (3,))  # set all the other empty voxel into transparent
+        colors = np.multiply(colors, 255)
+
+        if color_or_not:
+            sequence = [0, 32, 64, 96, 128]
+            surface = (random.choice(sequence), random.choice(sequence), random.choice(sequence))
+            print(iteration, surface)
+            colors[cube, :] = surface
+        else:
+            colors[cube, :] = (0, 0, 0)
+
+        convert = colors.reshape((-1, 3))
+        output = convert.reshape((imgLength, imgLength, 3))
+
+        output = output.repeat(Ratio, axis=0)  # enlarge the size of array by ratio
+        output = output.repeat(Ratio, axis=1)
+        output = np.uint8(output)  # change it back to integer format
+
+        folder_name = 'space' + str(Space) + '_ratio' + str(Ratio) + '_method' + method
+        if color_or_not:
+            folder_name = folder_name + '_withColor'
+        else:
+            folder_name = folder_name + '_bw'
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
         new = Image.fromarray(output)
