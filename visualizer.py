@@ -230,7 +230,7 @@ def find_centre(args):
 
         centre = [x_sum/flag, y_sum/flag, z_sum/flag]
         text = 'Estimated centre of cube[x, y, z]:\n' + str(centre)
-        plt.annotate(text, xy=(40, 40), xycoords='figure pixels')
+        plt.annotate(text, xy=(40, 40), xycoords='figure pixels', fontsize=12)
 
         if view_angle == 'x':
             ax.view_init(0, -90)
@@ -241,8 +241,8 @@ def find_centre(args):
 
         if not os.path.exists('ViewResult'):
             os.makedirs('ViewResult')
-        plt.savefig('ViewResult/view' + view_angle + '_' + file[13:])
-        # plt.show()
+        # plt.savefig('ViewResult/view' + view_angle + '_' + file[13:])
+        plt.show()
 
 
 def main():
