@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 # This import registers the 3D projection, but is otherwise unused.
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 import os
 import sys
