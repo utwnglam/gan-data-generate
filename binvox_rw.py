@@ -64,6 +64,7 @@ True
 import numpy as np
 import struct
 
+
 class Voxels(object):
     """ Holds a binvox model.
     data is either a three-dimensional numpy boolean array (dense representation)

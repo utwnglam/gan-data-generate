@@ -1,8 +1,13 @@
 import numpy as np
 from PIL import Image
+
 import random
 import os
 import sys
+import glob
+import argparse
+
+import binvox_rw
 
 Space = 64
 Ratio = 2
@@ -234,24 +239,16 @@ def version_three():
         new.save(folder_name + '/output_' + str(iteration) + ".png")
 
 
-def main():
-    loop = 0
-    method = ''
+def new_format(args):
+    loop = args.number
+    method = args.method
     color_or_not = False
     edge = 16
 
-    if len(sys.argv) > 3:
-        loop = int(sys.argv[1])
-        method = sys.argv[2]
-        if sys.argv[3] == 'yes':
-            color_or_not = True
-        elif sys.argv[3] == 'no':
-            color_or_not = False
-    else:
-        print('#\n#   USAGE: python generator.py [Number_of_png] [method_type] [need_color_or_not]\n' +
-              '#   method_type: len/ x/ y/ z/ xyz/ fix\n' +
-              '#   need_color_or_not: yes/ no\n' +
-              '#   * ALL ARGV IS COMPULSORY.\n#')
+    if args.color == 'yes':
+        color_or_not = True
+    elif args.color == 'no':
+        color_or_not = False
 
     for iteration in range(loop):
         x, y, z = np.indices((Space, Space, Space))
@@ -306,7 +303,6 @@ def main():
 
         convert = colors.reshape((-1, 3))
         output = convert.reshape((imgLength, imgLength, 3))
-
         output = output.repeat(Ratio, axis=0)
         output = output.repeat(Ratio, axis=1)
         output = np.uint8(output)
@@ -322,5 +318,39 @@ def main():
         new.save(folder_name + '/output_' + str(iteration) + ".png")
 
 
+def ikea_convert():
+    file_list = glob.glob('BINVOX/INPUT/*.binvox')
+    target = np.array([Space, Space, Space])
+
+    for file in file_list:
+        print(file)
+        with open(file, 'rb') as f:
+            model = binvox_rw.read_as_3d_array(f)
+
+        if np.all(model.data.shape == target):
+            colors = np.ones(model.data.shape + (3,))
+            colors = np.multiply(colors, 255)
+            colors[model.data, :] = (0, 0, 0)
+
+            convert = colors.reshape((-1, 3))
+            output = convert.reshape((imgLength, imgLength, 3))
+            output = output.repeat(Ratio, axis=0)
+            output = output.repeat(Ratio, axis=1)
+            output = np.uint8(output)
+            new = Image.fromarray(output)
+            if not os.path.exists('BINVOX/OUTPUT'):
+                os.makedirs('BINVOX/OUTPUT')
+            new.save('BINVOX/OUTPUT' + file[12:-7] + '.png')
+
+
+def main():
+    parser = argparse.ArgumentParser(description='voxel to image GENERATOR')
+    parser.add_argument('number', type=int, help='number of png you would like to generate')
+    parser.add_argument('method', type=str, default='x', help='supporting type: len/ x/ y/ z/ xyz/ fix')
+    parser.add_argument('color', type=str, default='no', help='option: yes/ no')
+    args = parser.parse_args()
+    new_format(args)
+
+
 if __name__ == "__main__":
-    main()
+    ikea_convert()
