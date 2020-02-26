@@ -5,6 +5,7 @@ import os
 import sys
 import glob
 
+
 def converting(folder_location):
     count = 0
     file_list = glob.glob(folder_location + '/*.png')
@@ -39,6 +40,8 @@ def converting(folder_location):
         count = count + 1
         new.save('gen_output' + '/gen_' + str(count) + ".png")
     print('done')
+
+
 def main():
     if not os.path.exists('gen_output'):
             os.makedirs('gen_output')

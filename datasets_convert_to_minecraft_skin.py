@@ -5,6 +5,7 @@ import os
 import sys
 import glob
 
+
 def interpolation(data):
     return_list = []
     for row_in_data in range(0, data.shape[0], 16):
@@ -20,14 +21,15 @@ def interpolation(data):
             r = r / (16*16) 
             g = g / (16*16) 
             b = b / (16*16)  
-            if(r >= 128 and g >= 128 and b>= 128): # which mean that pixel is transparent
-                return_list.append([255,255,255,0])
+            if r >= 128 and g >= 128 and b >= 128:  # which mean that pixel is transparent
+                return_list.append([255, 255, 255, 0])
             else:
-                return_list.append([r * 2,g * 2,b * 2,255])
+                return_list.append([r * 2, g * 2, b * 2, 255])
     return_list = np.uint8(return_list)
     return_list = np.asarray(return_list)           
     return_list = return_list.reshape((64, 64, 4))
     return return_list
+
 
 def converting(folder_location):
     count = 0
@@ -39,8 +41,9 @@ def converting(folder_location):
         after_interpo = interpolation(data)
         new = Image.fromarray(after_interpo)
         count = count + 1
-        new.save('convert_back_to_dataset/' + folder_location +'/convert_back_' + str(count) + ".png")
+        new.save('convert_back_to_dataset/' + folder_location + '/convert_back_' + str(count) + ".png")
     print('done')
+
 
 def main():
     if not os.path.exists('convert_back_to_dataset'):
@@ -55,9 +58,9 @@ def main():
         converting(folder_location)
     else:
         print('#\n#   USAGE: python datasets_convert_to_minecraft_skin.py [path_of_target_folder] \n' +
-        '#   Path_of_target_folder: the path of your minecraft skins located\n' +
-        '#   * ALL ARGV IS COMPULSORY.\n#')
+              '#   Path_of_target_folder: the path of your minecraft skins located\n' +
+              '#   * ALL ARGV IS COMPULSORY.\n#')
+
 
 if __name__ == "__main__":
     main()
-    

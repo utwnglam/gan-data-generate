@@ -10,6 +10,8 @@ import sys
 import glob
 import argparse
 
+import binvox_rw
+
 RESO = 64
 RATIO = 2
 TOTAL = RESO * RATIO
@@ -208,16 +210,13 @@ def find_centre(args):
         colors = np.resize(data, (RESO, RESO, RESO, 3))
 
         cube = np.zeros((RESO, RESO, RESO), dtype=bool)
-        transparent = np.array([cut_off, cut_off, cut_off])
         flag = 0
-        x_sum = 0.0
-        y_sum = 0.0
-        z_sum = 0.0
+        x_sum = y_sum = z_sum = 0.0
 
         for i in range(colors.shape[0]):
             for j in range(colors.shape[1]):
                 for k in range(colors.shape[2]):
-                    if np.all(colors[i][j][k] <= transparent):  # return TRUE when all the compare result is TRUE
+                    if np.all(colors[i][j][k] < cut_off):  # return TRUE when all the compare result is TRUE
                         flag += 1
                         x_sum += i
                         y_sum += j
@@ -242,17 +241,76 @@ def find_centre(args):
 
         if not os.path.exists('ViewResult'):
             os.makedirs('ViewResult')
-        # plt.savefig('ViewResult/view' + view_angle + '_' + file[13:])
+        plt.savefig('ViewResult/view' + view_angle + '_' + file[13:])
+        # plt.show()
+
+
+def ikea_fake(args):
+    cut_off = args.cutoff
+    file_list = glob.glob('BINVOX/INPUT/*.png')
+
+    for file in file_list:
+        print(file)
+        img = Image.open(file)
+        data = np.array(img)
+
+        #
+        #   INTERPOLATION PROCESS
+        #
+        intermediate = np.zeros((data.shape[0]/RATIO, data.shape[0]/RATIO, 3))
+        for a in range(intermediate.shape[0]):
+            for b in range(intermediate.shape[1]):
+                inter_sum = np.full(3, 0.0)
+                for m in range(a*2, a*2 + RATIO):
+                    for n in range(b*2, b*2 + RATIO):
+                        inter_sum += data[m][n]
+                if np.all(0 <= (inter_sum / 4)) and np.all((inter_sum / 4) < 256):
+                    intermediate[a][b] = inter_sum / 4
+                elif np.any((inter_sum / 4) >= 256):
+                    intermediate[a][b] = np.full(3, 256)
+                    print('Oh no!')
+                elif np.any((intermediate[a][b]) < 0):
+                    intermediate[a][b] = np.full(3, 0)
+                    print('Oh no!')
+
+        colors = np.resize(intermediate, (RESO, RESO, RESO, 3))
+        furniture = np.zeros((RESO, RESO, RESO), dtype=bool)
+
+        for i in range(colors.shape[0]):
+            for j in range(colors.shape[1]):
+                for k in range(colors.shape[2]):
+                    if np.all(colors[i][j][k] < cut_off):
+                        furniture[i][j][k] = True
+
+        colors = colors / 256.0
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.voxels(furniture, facecolors=colors, edgecolor='gray')
         plt.show()
+
+        #
+        #   VISUALIZE BINVOX FILE DIRECTLY
+        #
+        # with open(file, 'rb') as f:
+        #     model = binvox_rw.read_as_3d_array(f)
+        # print(model.data.shape)
+        # colors = np.ones(model.data.shape + (3,))
+        # colors[model.data, :] = (0.5, 0.5, 0.5)
+        #
+        # fig = plt.figure()
+        # ax = fig.gca(projection='3d')
+        # ax.voxels(model.data, facecolors=colors, edgecolor='k')
+        # plt.show()
 
 
 def main():
     parser = argparse.ArgumentParser(description='Finding the centre point of the 3D cube')
-    parser.add_argument('folder', type=str, help='The target VoxelResult series to view')
-    parser.add_argument('angle', type=str, help='The viewing angle of 3D space')
+    # parser.add_argument('folder', type=str, help='The target VoxelResult series to view')
+    # parser.add_argument('angle', type=str, help='The viewing angle of 3D space')
     parser.add_argument('-c', '--cutoff', type=int, default=192, help='The cut off value of the colour range')
     args = parser.parse_args()
-    find_centre(args)
+    # find_centre(args)
+    ikea_fake(args)
 
 
 if __name__ == "__main__":
