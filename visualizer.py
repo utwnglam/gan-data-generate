@@ -257,23 +257,22 @@ def ikea_fake(args):
         #
         #   INTERPOLATION PROCESS
         #
-        intermediate = np.zeros((data.shape[0]/RATIO, data.shape[0]/RATIO, 3))
-        for a in range(intermediate.shape[0]):
-            for b in range(intermediate.shape[1]):
-                inter_sum = np.full(3, 0.0)
-                for m in range(a*2, a*2 + RATIO):
-                    for n in range(b*2, b*2 + RATIO):
-                        inter_sum += data[m][n]
-                if np.all(0 <= (inter_sum / 4)) and np.all((inter_sum / 4) < 256):
-                    intermediate[a][b] = inter_sum / 4
-                elif np.any((inter_sum / 4) >= 256):
-                    intermediate[a][b] = np.full(3, 256)
-                    print('Oh no!')
-                elif np.any((intermediate[a][b]) < 0):
-                    intermediate[a][b] = np.full(3, 0)
-                    print('Oh no!')
+        # intermediate = np.zeros((data.shape[0]/RATIO, data.shape[0]/RATIO, 3))
+        # for a in range(intermediate.shape[0]):
+        #     for b in range(intermediate.shape[1]):
+        #         inter_sum = np.full(3, 0.0)
+        #         for m in range(a*2, a*2 + RATIO):
+        #             for n in range(b*2, b*2 + RATIO):
+        #                 inter_sum += data[m][n]
+        #         if np.all(0 <= (inter_sum / 4)) and np.all((inter_sum / 4) < 256):
+        #             intermediate[a][b] = inter_sum / 4
+        #         elif np.any((inter_sum / 4) >= 256):
+        #             intermediate[a][b] = np.full(3, 256)
+        #         elif np.any((intermediate[a][b]) < 0):
+        #             intermediate[a][b] = np.full(3, 0)
+        # colors = np.resize(intermediate, (RESO, RESO, RESO, 3))
 
-        colors = np.resize(intermediate, (RESO, RESO, RESO, 3))
+        colors = np.resize(data, (RESO, RESO, RESO, 3))
         furniture = np.zeros((RESO, RESO, RESO), dtype=bool)
 
         for i in range(colors.shape[0]):
@@ -288,19 +287,25 @@ def ikea_fake(args):
         ax.voxels(furniture, facecolors=colors, edgecolor='gray')
         plt.show()
 
+
+def binvox_viewer():
+    file_list = glob.glob('BINVOX/INPUT/*.binvox')
+
+    for file in file_list:
         #
         #   VISUALIZE BINVOX FILE DIRECTLY
         #
-        # with open(file, 'rb') as f:
-        #     model = binvox_rw.read_as_3d_array(f)
-        # print(model.data.shape)
-        # colors = np.ones(model.data.shape + (3,))
-        # colors[model.data, :] = (0.5, 0.5, 0.5)
-        #
-        # fig = plt.figure()
-        # ax = fig.gca(projection='3d')
-        # ax.voxels(model.data, facecolors=colors, edgecolor='k')
-        # plt.show()
+
+        with open(file, 'rb') as f:
+            model = binvox_rw.read_as_3d_array(f)
+        print(model.data.shape)
+        colors = np.ones(model.data.shape + (3,))
+        colors[model.data, :] = (0.5, 0.5, 0.5)
+
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.voxels(model.data, facecolors=colors, edgecolor='k')
+        plt.show()
 
 
 def main():

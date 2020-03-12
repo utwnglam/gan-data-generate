@@ -19,6 +19,7 @@
 """
 Binvox to Numpy and back.
 
+
 >>> import numpy as np
 >>> import binvox_rw
 >>> with open('chair.binvox', 'rb') as f:
@@ -63,7 +64,6 @@ True
 
 import numpy as np
 import struct
-
 
 class Voxels(object):
     """ Holds a binvox model.

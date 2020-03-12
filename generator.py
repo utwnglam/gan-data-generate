@@ -334,8 +334,8 @@ def ikea_convert():
 
             convert = colors.reshape((-1, 3))
             output = convert.reshape((imgLength, imgLength, 3))
-            output = output.repeat(Ratio, axis=0)
-            output = output.repeat(Ratio, axis=1)
+            # output = output.repeat(Ratio, axis=0)
+            # output = output.repeat(Ratio, axis=1)
             output = np.uint8(output)
             new = Image.fromarray(output)
             if not os.path.exists('BINVOX/OUTPUT'):
