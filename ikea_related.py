@@ -10,19 +10,9 @@ import binvox_rw
 def to_vox(args):
     file_list = glob.glob('BINVOX/DATA/IKEA_' + args.folder + '/*.obj')
 
-    #
-    #   QUICKLY READ ALL VOXEL FILES
-    #
-    # file_list = glob.glob('BINVOX/DATA/BINVOX_' + args.folder + '/*.binvox')
-
     for file in file_list:
         print(file)
         os.system('./BINVOX/binvox -d 128 -down -dc -cb ' + file)
-
-        #
-        #   QUICKLY READ ALL VOXEL FILES
-        #
-        # os.system('./BINVOX/viewvox ' + file)
 
 
 def variation(args):
