@@ -1,3 +1,4 @@
+from pyface.api import GUI
 from mayavi import mlab
 import numpy as np
 from PIL import Image
@@ -47,12 +48,24 @@ def png_viewer(args):
                         furniture[i][j][k] = 1
 
         xx, yy, zz = np.where(furniture == 1)
-
-        mlab.points3d(xx, yy, zz,
+        fig = mlab.figure(1, size=(700, 700))
+        currfig = mlab.points3d(xx, yy, zz,
                       color=(0, 1, 0),
                       mode="cube",
                       scale_factor=1)
-        mlab.show()
+
+        mlab.axes(nb_labels=4)
+        # mlab.view(azimuth=45, elevation=70)
+        currfig.scene.camera.zoom(0.7)
+
+        output = 'BINVOX/OUTPUT/' + file[13:]
+        GUI().process_events()
+        imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
+        img_RGB = np.uint8(imgmap_RGB)
+        img_RGB = Image.fromarray(img_RGB)
+        img_RGB.save(output)
+
+        # mlab.show()
 
 
 def main():
