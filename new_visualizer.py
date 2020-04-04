@@ -7,7 +7,6 @@ import glob
 import argparse
 
 import binvox_rw
-
 space = 64
 
 
@@ -48,17 +47,28 @@ def png_viewer(args):
                         furniture[i][j][k] = 1
 
         xx, yy, zz = np.where(furniture == 1)
-        fig = mlab.figure(1, size=(512, 555))
+        fig = mlab.figure(1, size=(700, 700))
         currfig = mlab.points3d(xx, yy, zz,
-                      color=(0, 1, 0),
-                      mode="cube",
-                      scale_factor=1)
+                                color=(0, 1, 0),
+                                mode="cube",
+                                scale_factor=1)
 
-        mlab.axes(nb_labels=4)
-        mlab.view(azimuth=135, elevation=70)
-        currfig.scene.camera.zoom(0.7)
+        #
+        #   MANIPULATING VIEWING RELATED SETTING
+        #
+        if args.angle == 'x':
+            mlab.view(azimuth=270, elevation=90, distance=125, focalpoint=[32, 32, 32])
+        elif args.angle == 'y':
+            mlab.view(azimuth=0, elevation=90, distance=125, focalpoint=[32, 32, 32])
+        else:
+            mlab.view(azimuth=315, elevation=65, distance=125, focalpoint=[32, 32, 32])
 
-        output = 'BINVOX/OUTPUT/' + file[13:]
+        mlab.axes(nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
+        mlab.outline(extent=(0, 64, 0, 64, 0, 64))
+        mlab.gcf().scene.parallel_projection = True
+        currfig.scene.camera.zoom(0.6)
+
+        output = 'BINVOX/OUTPUT/' + file[13:-4] + '_out.png'
         GUI().process_events()
         imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
         img_RGB = np.uint8(imgmap_RGB)
@@ -66,15 +76,16 @@ def png_viewer(args):
         if not os.path.exists('BINVOX/OUTPUT'):
             os.makedirs('BINVOX/OUTPUT')
         img_RGB.save(output)
-        mlab.clf() 
 
         # mlab.show()
+        mlab.clf()
 
 
 def main():
     parser = argparse.ArgumentParser(description='Finding the centre point of the 3D cube')
-    parser.add_argument('file_type', type=str, help='enter the target file type: png/ binvox to view')
-    parser.add_argument('--angle', type=str, help='The viewing angle of 3D space')
+    parser.add_argument('file_type', type=str, choices=['binvox', 'png'], help='enter the target file type')
+    parser.add_argument('-a', '--angle', type=str, default='iso', choices=['x', 'y'],
+                        help='The viewing angle of 3D space')
     parser.add_argument('-c', '--cutoff', type=int, default=192, help='The cut off value of the colour range')
     args = parser.parse_args()
     if args.file_type == 'binvox':
