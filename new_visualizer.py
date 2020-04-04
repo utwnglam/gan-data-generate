@@ -40,14 +40,16 @@ def png_viewer(args):
         colors = np.resize(data, (space, space, space, 3))
         furniture = np.zeros((space, space, space))
 
+        cc = np.array([])
+
         for i in range(colors.shape[0]):
             for j in range(colors.shape[1]):
                 for k in range(colors.shape[2]):
                     if np.all(colors[i][j][k] < args.cutoff):
                         furniture[i][j][k] = 1
 
-        xx, yy, zz = np.where(furniture == 1)
         fig = mlab.figure(1, size=(700, 700))
+        xx, yy, zz = np.where(furniture == 1)
         currfig = mlab.points3d(xx, yy, zz,
                                 color=(0, 1, 0),
                                 mode="cube",
@@ -57,16 +59,15 @@ def png_viewer(args):
         #   MANIPULATING VIEWING RELATED SETTING
         #
         if args.angle == 'x':
-            mlab.view(azimuth=270, elevation=90, distance=125, focalpoint=[32, 32, 32])
+            mlab.view(azimuth=270, elevation=90, distance=140, focalpoint=(32, 32, 32))
         elif args.angle == 'y':
-            mlab.view(azimuth=0, elevation=90, distance=125, focalpoint=[32, 32, 32])
+            mlab.view(azimuth=0, elevation=90, distance=140, focalpoint=(32, 32, 32))
         else:
-            mlab.view(azimuth=315, elevation=65, distance=125, focalpoint=[32, 32, 32])
-
-        mlab.axes(nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
+            mlab.view(azimuth=315, elevation=65, distance=140, focalpoint=(32, 32, 32))
+        fig.scene.camera.parallel_projection = True
+        fig.scene.camera.parallel_scale = 65    # smaller the number, greater zoom
+        mlab.axes(figure=fig, nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
         mlab.outline(extent=(0, 64, 0, 64, 0, 64))
-        mlab.gcf().scene.parallel_projection = True
-        currfig.scene.camera.zoom(0.6)
 
         output = 'BINVOX/OUTPUT/' + file[13:-4] + '_out.png'
         GUI().process_events()
