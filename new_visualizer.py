@@ -8,6 +8,7 @@ import argparse
 
 import binvox_rw
 space = 64
+max_cutoff = 208
 
 
 def binvox_viewer():
@@ -39,8 +40,7 @@ def png_viewer(args):
         data = np.array(img)
         colors = np.resize(data, (space, space, space, 3))
         furniture = np.zeros((space, space, space))
-
-        cc = np.array([])
+        fig = mlab.figure(1, size=(700, 700))
 
         for i in range(colors.shape[0]):
             for j in range(colors.shape[1]):
@@ -48,12 +48,22 @@ def png_viewer(args):
                     if np.all(colors[i][j][k] < args.cutoff):
                         furniture[i][j][k] = 1
 
-        fig = mlab.figure(1, size=(700, 700))
         xx, yy, zz = np.where(furniture == 1)
-        currfig = mlab.points3d(xx, yy, zz,
-                                color=(0, 1, 0),
+        # Create and populate lookup table (the integer index in s corresponding
+        #   to the point will be used as the row in the lookup table
+        s = np.arange(len(xx))
+        lut = np.zeros((len(xx), 4))
+        for row in s:
+            temp = np.append((colors[xx[row]][yy[row]][zz[row]] + (256-max_cutoff)), 255)
+            lut[row, :] = temp
+
+        # Plot the points, update its lookup table
+        currfig = mlab.points3d(xx, yy, zz, s,
+                                scale_mode='none',
                                 mode="cube",
                                 scale_factor=1)
+        currfig.module_manager.scalar_lut_manager.lut.number_of_colors = len(s)
+        currfig.module_manager.scalar_lut_manager.lut.table = lut
 
         #
         #   MANIPULATING VIEWING RELATED SETTING
@@ -83,12 +93,19 @@ def png_viewer(args):
 
 
 def main():
+    def cutoff_type(x):
+        x = int(x)
+        if x > max_cutoff:
+            raise argparse.ArgumentTypeError('Maximum cutoff is ' + str(max_cutoff))
+        return x
+
     parser = argparse.ArgumentParser(description='Finding the centre point of the 3D cube')
     parser.add_argument('file_type', type=str, choices=['binvox', 'png'], help='enter the target file type')
     parser.add_argument('-a', '--angle', type=str, default='iso', choices=['x', 'y'],
                         help='The viewing angle of 3D space')
-    parser.add_argument('-c', '--cutoff', type=int, default=192, help='The cut off value of the colour range')
+    parser.add_argument('-c', '--cutoff', type=cutoff_type, default=192, help='The cut off value of the colour range')
     args = parser.parse_args()
+
     if args.file_type == 'binvox':
         binvox_viewer()
     elif args.file_type == 'png':
