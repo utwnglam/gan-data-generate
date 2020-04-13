@@ -12,7 +12,7 @@ def to_vox(args):
 
     for file in file_list:
         print(file)
-        os.system('./BINVOX/binvox -d 128 -down -dc -cb ' + file)
+        os.system('./BINVOX/binvox -d 128 -down -dc -cb -rotx ' + file)
 
 
 def variation(args):
@@ -44,7 +44,9 @@ def variation(args):
                 scipy.ndimage.zoom(model.data, zoom_tuple, order=0)
             model.data = out
 
-        with open('BINVOX/output.binvox', 'wb') as f:
+        out_name = 'BINVOX/OUTPUT/' + file[24:-7] + '_x' + str(args.x) + 'y' + str(args.y) + 'z' + str(args.z) + '.binvox'
+
+        with open(out_name, 'wb') as f:
             model.write(f)
 
 

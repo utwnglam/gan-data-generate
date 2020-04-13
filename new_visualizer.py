@@ -11,7 +11,12 @@ space = 64
 max_cutoff = 208
 
 
+def z_axis_pos():
+    pass
+
+
 def binvox_viewer():
+    # file_list = glob.glob('BINVOX/DATA/BINVOX_desk/*.binvox')
     file_list = glob.glob('BINVOX/INPUT/*.binvox')
 
     for file in file_list:
@@ -21,14 +26,33 @@ def binvox_viewer():
         #
         with open(file, 'rb') as f:
             model = binvox_rw.read_as_3d_array(f)
-        print('The input binvox shape is ' + str(model.data.shape))
+        # print('The input binvox shape is ' + str(model.data.shape))
         xx, yy, zz = np.where(model.data == 1)
 
+        fig = mlab.figure(1, size=(700, 700))
+
         mlab.points3d(xx, yy, zz,
+                      # scale_mode='none',
                       color=(0, 1, 0),
                       mode="cube",
                       scale_factor=1)
-        mlab.show()
+        mlab.view(azimuth=315, elevation=65, distance=140, focalpoint=(32, 32, 32))
+        fig.scene.camera.parallel_projection = True
+        fig.scene.camera.parallel_scale = 65
+        mlab.axes(figure=fig, nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
+        mlab.outline(extent=(0, 64, 0, 64, 0, 64))
+
+        output = 'BINVOX/OUTPUT/' + file[13:-7] + '_3D.png'
+        GUI().process_events()
+        imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
+        img_RGB = np.uint8(imgmap_RGB)
+        img_RGB = Image.fromarray(img_RGB)
+        if not os.path.exists('BINVOX/OUTPUT'):
+            os.makedirs('BINVOX/OUTPUT')
+        img_RGB.save(output)
+
+        # mlab.show()
+        mlab.clf()
 
 
 def png_viewer(args):
