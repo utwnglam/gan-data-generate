@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from pyface.api import GUI
+from mayavi import mlab
 import numpy as np
 from PIL import Image
 # This import registers the 3D projection, but is otherwise unused.
@@ -248,11 +250,12 @@ def find_centre(args):
 
 def interpolation(args):
     cut_off = args.cutoff
-    # file_list = glob.glob('BINVOX/INPUT/*.png')
     file_list = glob.glob('voxel_result/*.png')
 
     for file in file_list:
-        print(file)
+        base = os.path.basename(file)
+        print(base)
+        base = os.path.splitext(base)[0]
         img = Image.open(file)
         data = np.array(img)
 
@@ -281,18 +284,42 @@ def interpolation(args):
             for j in range(colors.shape[1]):
                 for k in range(colors.shape[2]):
                     if np.all(colors[i][j][k] < cut_off):
-                        furniture[i][j][k] = True
+                        furniture[i][j][k] = 1
 
-        colors = colors / 256.0
-        fig = plt.figure()
-        ax = fig.gca(projection='3d')
-        ax.view_init(20, 45)
-        ax.voxels(furniture, facecolors=colors)
+        fig = mlab.figure(1, fgcolor=(0.4, 0.4, 0.4), bgcolor=(0.9, 0.9, 0.9), size=(600, 600))
+        xx, yy, zz = np.where(furniture == 1)
+        s = np.arange(len(xx))
+        lut = np.zeros((len(xx), 4))
+        for row in s:
+            temp = np.append((colors[xx[row]][yy[row]][zz[row]] + (256 - 216)), 255)
+            lut[row, :] = temp
 
+        currfig = mlab.points3d(xx, yy, zz, s, scale_mode='none', mode="cube", scale_factor=1)
+        currfig.module_manager.scalar_lut_manager.lut.number_of_colors = len(s)
+        currfig.module_manager.scalar_lut_manager.lut.table = lut
+
+        fp = RESO / 2
+        if args.angle == 'x':
+            mlab.view(azimuth=270, elevation=90, distance=130, focalpoint=(fp, fp, fp))
+        elif args.angle == 'y':
+            mlab.view(azimuth=0, elevation=90, distance=130, focalpoint=(fp, fp, fp))
+        elif args.angle == 'iso':
+            mlab.view(azimuth=315, elevation=65, distance=130, focalpoint=(fp, fp, fp))
+        fig.scene.camera.parallel_projection = True
+        fig.scene.camera.parallel_scale = 55
+        mlab.axes(figure=fig, nb_labels=4, extent=(0, RESO, 0, RESO, 0, RESO))
+        mlab.outline(extent=(0, RESO, 0, RESO, 0, RESO))
+
+        output = 'ViewResult/' + base + '_out.png'
+        GUI().process_events()
+        imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
+        img_RGB = np.uint8(imgmap_RGB)
+        img_RGB = Image.fromarray(img_RGB)
         if not os.path.exists('ViewResult'):
             os.makedirs('ViewResult')
-        plt.savefig('ViewResult/view_' + file[13:])
-        # plt.show()
+        img_RGB.save(output)
+
+        mlab.clf()
 
 
 def binvox_viewer():
@@ -317,7 +344,8 @@ def binvox_viewer():
 
 def main():
     parser = argparse.ArgumentParser(description='Finding the centre point of the 3D cube')
-    parser.add_argument('angle', type=str, help='The viewing angle of 3D space')
+    parser.add_argument('-a', '--angle', type=str, default='iso', choices=['x', 'y'],
+                        help='The viewing angle of 3D space')
     parser.add_argument('-c', '--cutoff', type=int, default=192, help='The cut off value of the colour range')
     args = parser.parse_args()
     # find_centre(args)
