@@ -19,7 +19,9 @@ def variation(args):
     file_list = glob.glob('BINVOX/DATA/BINVOX_' + args.folder + '/*.binvox')
 
     for file in file_list:
-        print(file)
+        base = os.path.basename(file)
+        base = os.path.splitext(base)[0]
+
         with open(file, 'rb') as f:
             model = binvox_rw.read_as_3d_array(f)
 
@@ -34,6 +36,7 @@ def variation(args):
             zx = int(np.round(edge * args.x))
             zy = int(np.round(edge * args.y))
             zz = int(np.round(edge * args.z))
+
             x_axis = (edge - zx) // 2
             y_axis = (edge - zy) // 2
             z_axis = (edge - zz) // 2
@@ -42,9 +45,50 @@ def variation(args):
             out = np.zeros_like(model.data)
             out[x_axis:x_axis + zx, y_axis:y_axis + zy, z_axis:z_axis + zz] = \
                 scipy.ndimage.zoom(model.data, zoom_tuple, order=0)
+
+            # Moving the model up
+            stop = 0
+            while stop <= 32:
+                if out[31][31][63 - stop]:
+                    print(base, 63 - stop)
+                    break
+                elif out[30][31][63 - stop] or out[32][31][63 - stop]:
+                    print('hi')
+                    break
+                stop += 1
+            out = np.zeros_like(model.data)
+            out[:, :, stop:64] = model.data[:, :, 0:64 - stop]
             model.data = out
 
-        out_name = 'BINVOX/OUTPUT/' + file[24:-7] + '_x' + str(args.x) + 'y' + str(args.y) + 'z' + str(args.z) + '.binvox'
+        out_name = 'BINVOX/OUTPUT/' + base + '_x' + str(args.x) + 'y' + str(args.y) + 'z' + str(args.z) + '.binvox'
+
+        with open(out_name, 'wb') as f:
+            model.write(f)
+
+
+def z_axis_pos():
+    file_list = glob.glob('BINVOX/INPUT/*.binvox')
+
+    for file in file_list:
+        base = os.path.basename(file)
+
+        with open(file, 'rb') as f:
+            model = binvox_rw.read_as_3d_array(f)
+
+        stop = 0
+        while stop <= 32:
+            if model.data[31][31][63-stop]:
+                print(base, 63-stop)
+                break
+            elif model.data[30][31][63-stop] or model.data[32][31][63-stop]:
+                print('hi')
+                break
+            stop += 1
+
+        out = np.zeros_like(model.data)
+        out[:, :, stop:64] = model.data[:, :, 0:64-stop]
+        model.data = out
+        out_name = 'BINVOX/OUTPUT/' + base
 
         with open(out_name, 'wb') as f:
             model.write(f)

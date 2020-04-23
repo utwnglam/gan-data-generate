@@ -11,16 +11,15 @@ space = 64
 max_cutoff = 208
 
 
-def z_axis_pos():
-    pass
-
-
 def binvox_viewer():
     # file_list = glob.glob('BINVOX/DATA/BINVOX_desk/*.binvox')
     file_list = glob.glob('BINVOX/INPUT/*.binvox')
 
     for file in file_list:
-        print(file)
+        base = os.path.basename(file)
+        print(base)
+        base = os.path.splitext(base)[0]
+
         #
         #   VISUALIZE BINVOX FILE DIRECTLY
         #
@@ -42,7 +41,7 @@ def binvox_viewer():
         mlab.axes(figure=fig, nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
         mlab.outline(extent=(0, 64, 0, 64, 0, 64))
 
-        output = 'BINVOX/OUTPUT/' + file[13:-7] + '_3D.png'
+        output = 'BINVOX/OUTPUT/' + base + '_3D.png'
         GUI().process_events()
         imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
         img_RGB = np.uint8(imgmap_RGB)
@@ -96,7 +95,7 @@ def png_viewer(args):
             mlab.view(azimuth=270, elevation=90, distance=140, focalpoint=(32, 32, 32))
         elif args.angle == 'y':
             mlab.view(azimuth=0, elevation=90, distance=140, focalpoint=(32, 32, 32))
-        else:
+        elif args.angle == 'iso':
             mlab.view(azimuth=315, elevation=65, distance=140, focalpoint=(32, 32, 32))
         fig.scene.camera.parallel_projection = True
         fig.scene.camera.parallel_scale = 65    # smaller the number, greater zoom
@@ -138,4 +137,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

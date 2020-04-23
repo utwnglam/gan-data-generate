@@ -12,8 +12,8 @@ import argparse
 
 import binvox_rw
 
-RESO = 64
-RATIO = 2
+RESO = 40
+RATIO = 4
 TOTAL = RESO * RATIO
 CutOff = 192
 
@@ -197,7 +197,7 @@ def method3():
 def find_centre(args):
     view_angle = args.angle
     cut_off = args.cutoff
-    file_list = glob.glob('voxel_result/*' + args.folder + '*.png')
+    file_list = glob.glob('voxel_result/*.png')
     print(file_list)
 
     for file in file_list:
@@ -237,7 +237,8 @@ def find_centre(args):
         elif view_angle == 'y':
             ax.view_init(0, 0)
         elif view_angle == 'z':
-            ax.view_init(5, 38)
+            # ax.view_init(5, 38)
+            ax.view_init(20, 45)
 
         if not os.path.exists('ViewResult'):
             os.makedirs('ViewResult')
@@ -245,9 +246,10 @@ def find_centre(args):
         # plt.show()
 
 
-def ikea_fake(args):
+def interpolation(args):
     cut_off = args.cutoff
-    file_list = glob.glob('BINVOX/INPUT/*.png')
+    # file_list = glob.glob('BINVOX/INPUT/*.png')
+    file_list = glob.glob('voxel_result/*.png')
 
     for file in file_list:
         print(file)
@@ -257,22 +259,22 @@ def ikea_fake(args):
         #
         #   INTERPOLATION PROCESS
         #
-        # intermediate = np.zeros((data.shape[0]/RATIO, data.shape[0]/RATIO, 3))
-        # for a in range(intermediate.shape[0]):
-        #     for b in range(intermediate.shape[1]):
-        #         inter_sum = np.full(3, 0.0)
-        #         for m in range(a*2, a*2 + RATIO):
-        #             for n in range(b*2, b*2 + RATIO):
-        #                 inter_sum += data[m][n]
-        #         if np.all(0 <= (inter_sum / 4)) and np.all((inter_sum / 4) < 256):
-        #             intermediate[a][b] = inter_sum / 4
-        #         elif np.any((inter_sum / 4) >= 256):
-        #             intermediate[a][b] = np.full(3, 256)
-        #         elif np.any((intermediate[a][b]) < 0):
-        #             intermediate[a][b] = np.full(3, 0)
-        # colors = np.resize(intermediate, (RESO, RESO, RESO, 3))
+        intermediate = np.zeros((256, 256, 3))
+        temp = RATIO * RATIO
+        for a in range(intermediate.shape[0]):
+            for b in range(intermediate.shape[1]):
+                inter_sum = np.full(3, 0.0)
+                for m in range(a*RATIO, a*RATIO + RATIO):
+                    for n in range(b*RATIO, b*RATIO + RATIO):
+                        inter_sum += data[m][n]
+                if np.all(0 <= (inter_sum / temp)) and np.all((inter_sum / temp) < 256):
+                    intermediate[a][b] = inter_sum / temp
+                elif np.any((inter_sum / temp) >= 256):
+                    intermediate[a][b] = np.full(3, 256)
+                elif np.any((intermediate[a][b]) < 0):
+                    intermediate[a][b] = np.full(3, 0)
 
-        colors = np.resize(data, (RESO, RESO, RESO, 3))
+        colors = np.resize(intermediate, (RESO, RESO, RESO, 3))
         furniture = np.zeros((RESO, RESO, RESO), dtype=bool)
 
         for i in range(colors.shape[0]):
@@ -284,8 +286,13 @@ def ikea_fake(args):
         colors = colors / 256.0
         fig = plt.figure()
         ax = fig.gca(projection='3d')
-        ax.voxels(furniture, facecolors=colors, edgecolor='gray')
-        plt.show()
+        ax.view_init(20, 45)
+        ax.voxels(furniture, facecolors=colors)
+
+        if not os.path.exists('ViewResult'):
+            os.makedirs('ViewResult')
+        plt.savefig('ViewResult/view_' + file[13:])
+        # plt.show()
 
 
 def binvox_viewer():
@@ -310,12 +317,11 @@ def binvox_viewer():
 
 def main():
     parser = argparse.ArgumentParser(description='Finding the centre point of the 3D cube')
-    # parser.add_argument('folder', type=str, help='The target VoxelResult series to view')
-    # parser.add_argument('angle', type=str, help='The viewing angle of 3D space')
+    parser.add_argument('angle', type=str, help='The viewing angle of 3D space')
     parser.add_argument('-c', '--cutoff', type=int, default=192, help='The cut off value of the colour range')
     args = parser.parse_args()
     # find_centre(args)
-    ikea_fake(args)
+    interpolation(args)
 
 
 if __name__ == "__main__":
