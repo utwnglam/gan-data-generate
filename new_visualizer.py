@@ -7,6 +7,8 @@ import glob
 import argparse
 
 import binvox_rw
+import moviepy.editor as mpy
+
 space = 64
 max_cutoff = 208
 
@@ -55,15 +57,17 @@ def binvox_viewer():
 
 
 def png_viewer(args):
-    file_list = glob.glob('BINVOX/INPUT/*.png')
+    # file_list = glob.glob('BINVOX/INPUT/*.png')
+    file_list = glob.glob('voxel_result/*.png')
 
     for file in file_list:
-        print(file)
+        base = os.path.basename(file)
+        print(base)
         img = Image.open(file)
         data = np.array(img)
         colors = np.resize(data, (space, space, space, 3))
         furniture = np.zeros((space, space, space))
-        fig = mlab.figure(1, size=(700, 700))
+        fig = mlab.figure(1, size=(600, 600))
 
         for i in range(colors.shape[0]):
             for j in range(colors.shape[1]):
@@ -102,16 +106,26 @@ def png_viewer(args):
         mlab.axes(figure=fig, nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
         mlab.outline(extent=(0, 64, 0, 64, 0, 64))
 
-        output = 'BINVOX/OUTPUT/' + file[13:-4] + '_out.png'
-        GUI().process_events()
-        imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
-        img_RGB = np.uint8(imgmap_RGB)
-        img_RGB = Image.fromarray(img_RGB)
-        if not os.path.exists('BINVOX/OUTPUT'):
-            os.makedirs('BINVOX/OUTPUT')
-        img_RGB.save(output)
+        duration = 6  # duration of the animation in seconds (it will loop)
 
-        # mlab.show()
+        def make_frame(t):
+            """ Generates and returns the frame for time t. """
+            mlab.view(azimuth=360 * t / duration)  # camera angle
+            return mlab.screenshot(antialiased=True)  # return a RGB image
+
+        output = 'ViewResult/' + base + '_out.gif'
+        animation = mpy.VideoClip(make_frame, duration=duration).resize(0.5)
+        animation.write_gif(output, fps=25)
+
+        # output = 'BINVOX/OUTPUT/' + file[13:-4] + '_out.png'
+        # GUI().process_events()
+        # imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
+        # img_RGB = np.uint8(imgmap_RGB)
+        # img_RGB = Image.fromarray(img_RGB)
+        # if not os.path.exists('BINVOX/OUTPUT'):
+        #     os.makedirs('BINVOX/OUTPUT')
+        # img_RGB.save(output)
+
         mlab.clf()
 
 

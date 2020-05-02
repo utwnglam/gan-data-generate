@@ -13,6 +13,7 @@ import glob
 import argparse
 
 import binvox_rw
+import moviepy.editor as mpy
 
 RESO = 40
 RATIO = 4
@@ -307,18 +308,30 @@ def interpolation(args):
             mlab.view(azimuth=315, elevation=65, distance=130, focalpoint=(fp, fp, fp))
         fig.scene.camera.parallel_projection = True
         fig.scene.camera.parallel_scale = 55
-        mlab.axes(figure=fig, nb_labels=4, extent=(0, RESO, 0, RESO, 0, RESO))
+        mlab.axes(figure=fig, nb_labels=5, extent=(0, RESO, 0, RESO, 0, RESO))
         mlab.outline(extent=(0, RESO, 0, RESO, 0, RESO))
 
-        output = 'ViewResult/' + base + '_out.png'
-        GUI().process_events()
-        imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
-        img_RGB = np.uint8(imgmap_RGB)
-        img_RGB = Image.fromarray(img_RGB)
-        if not os.path.exists('ViewResult'):
-            os.makedirs('ViewResult')
-        img_RGB.save(output)
+        duration = 6  # duration of the animation in seconds (it will loop)
 
+        def make_frame(t):
+            """ Generates and returns the frame for time t. """
+            mlab.view(azimuth=360 * t / duration)  # camera angle
+            return mlab.screenshot(antialiased=True)  # return a RGB image
+
+        output = 'ViewResult/' + base + '_out.gif'
+        animation = mpy.VideoClip(make_frame, duration=duration).resize(0.5)
+        # Video generation takes 10 seconds, GIF generation takes 25s
+        animation.write_gif(output, fps=25)
+
+        # GUI().process_events()
+        # imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
+        # img_RGB = np.uint8(imgmap_RGB)
+        # img_RGB = Image.fromarray(img_RGB)
+        # if not os.path.exists('ViewResult'):
+        #     os.makedirs('ViewResult')
+        # img_RGB.save(output)
+
+        # mlab.show()
         mlab.clf()
 
 
