@@ -7,12 +7,13 @@ import scipy.ndimage
 import binvox_rw
 
 
-def to_vox(args):
-    file_list = glob.glob('BINVOX/DATA/IKEA_' + args.folder + '/*.obj')
+def to_vox():
+    file_list = glob.glob('ShapeNetCore.v2/Collection/table/*.obj')
 
     for file in file_list:
-        print(file)
-        os.system('./BINVOX/binvox -d 128 -down -dc -cb -rotx ' + file)
+        basename = os.path.basename(file)
+        print(basename)
+        os.system('./binvox -d 128 -down -dc -cb -rotx' + file)
 
 
 def variation(args):
@@ -66,6 +67,62 @@ def variation(args):
             model.write(f)
 
 
+def binvox_downsample():
+    # file_list = glob.glob('ShapeNetCore.v2/Collection/table/*.binvox')
+    file_list = glob.glob('*.binvox')
+
+    for file in file_list:
+        base = os.path.splitext(file)[0]
+        print(base)
+        with open(file, 'rb') as f:
+            model = binvox_rw.read_as_3d_array(f)
+
+        zoom_tuple = np.array([0.5, 0.5, 0.5])
+        inter = scipy.ndimage.zoom(model.data, zoom_tuple, order=0)
+        inter = np.rot90(inter, k=1, axes=(1, 2))
+
+        x1 = y1 = z1 = x2 = y2 = z2 = 0
+        for i in range(inter.shape[0]):
+            x1 = i
+            if np.any(inter[i]):
+                break
+        for i2 in reversed(range(inter.shape[0])):
+            x2 = i2
+            if np.any(inter[i2]):
+                break
+        for j in range(inter.shape[1]):
+            y1 = j
+            if np.any(inter[:, j]):
+                break
+        for j2 in reversed(range(inter.shape[1])):
+            y2 = j2
+            if np.any(inter[:, j2]):
+                break
+        for k in range(inter.shape[2]):
+            z1 = k
+            if np.any(inter[:, :, k]):
+                break
+        for k2 in reversed(range(inter.shape[2])):
+            z2 = k2
+            if np.any(inter[:, :, k2]):
+                break
+
+        print(x1, x2, y1, y2, z1, z2)
+        bx = (x1 + (inter.shape[0]-1 - x2)) // 2
+        by = (y1 + (inter.shape[1]-1 - y2)) // 2
+        bz = (z1 + (inter.shape[2]-1 - z2)) // 2
+        print(bx, by, bz)
+
+        out = np.zeros_like(inter)
+        out[bx: bx+(x2-x1), by: by+(y2-y1), bz: bz+(z2-z1)] = inter[x1:x2, y1:y2, z1:z2]
+        model.data = out
+        model.dims = [inter.shape[0], inter.shape[1], inter.shape[2]]
+        out_name = base + '_64.binvox'
+
+        with open(out_name, 'wb') as f:
+            model.write(f)
+
+
 def z_axis_pos():
     file_list = glob.glob('BINVOX/INPUT/*.binvox')
 
@@ -77,16 +134,16 @@ def z_axis_pos():
 
         stop = 0
         while stop <= 32:
-            if model.data[31][31][63-stop]:
-                print(base, 63-stop)
+            if model.data[31][31][63 - stop]:
+                print(base, 63 - stop)
                 break
-            elif model.data[30][31][63-stop] or model.data[32][31][63-stop]:
+            elif model.data[30][31][63 - stop] or model.data[32][31][63 - stop]:
                 print('hi')
                 break
             stop += 1
 
         out = np.zeros_like(model.data)
-        out[:, :, stop:64] = model.data[:, :, 0:64-stop]
+        out[:, :, stop:64] = model.data[:, :, 0:64 - stop]
         model.data = out
         out_name = 'BINVOX/OUTPUT/' + base
 
@@ -104,10 +161,11 @@ def main():
     args = parser.parse_args()
 
     if args.function == 'convert':
-        to_vox(args)
+        to_vox()
     elif args.function == 'scale':
-        variation(args)
+        # variation(args)
+        pass
 
 
 if __name__ == "__main__":
-    main()
+    binvox_downsample()
