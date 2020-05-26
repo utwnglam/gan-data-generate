@@ -67,18 +67,42 @@ def variation(args):
             model.write(f)
 
 
-def binvox_downsample():
-    # file_list = glob.glob('ShapeNetCore.v2/Collection/table/*.binvox')
+def z_axis_pos():
     file_list = glob.glob('*.binvox')
 
     for file in file_list:
-        base = os.path.splitext(file)[0]
-        print(base)
+        base = os.path.basename(file)
+
         with open(file, 'rb') as f:
             model = binvox_rw.read_as_3d_array(f)
 
-        zoom_tuple = np.array([0.5, 0.5, 0.5])
-        inter = scipy.ndimage.zoom(model.data, zoom_tuple, order=0)
+        z = 0
+        for k in range(model.data.shape[2]):
+            z = k
+            if np.any(model.data[:, :, k]):
+                break
+
+        out = np.zeros_like(model.data)
+        out[:, :, z:64] = model.data[:, :, 0:64 - z]
+        model.data = out
+        out_name = os.path.splitext(base)[0] + '_zup.binvox'
+
+        with open(out_name, 'wb') as f:
+            model.write(f)
+
+
+def binvox_downsample():
+    file_list = glob.glob('ShapeNetCore.v2/Collection/table/*.binvox')
+    # file_list = glob.glob('*.binvox')
+
+    for file in file_list:
+        base = os.path.basename(file)
+        print(base)
+        base = os.path.splitext(base)[0]
+        with open(file, 'rb') as f:
+            model = binvox_rw.read_as_3d_array(f)
+
+        inter = scipy.ndimage.zoom(model.data, 0.5, order=0)
         inter = np.rot90(inter, k=1, axes=(1, 2))
 
         x1 = y1 = z1 = x2 = y2 = z2 = 0
@@ -117,36 +141,11 @@ def binvox_downsample():
         out[bx: bx+(x2-x1), by: by+(y2-y1), bz: bz+(z2-z1)] = inter[x1:x2, y1:y2, z1:z2]
         model.data = out
         model.dims = [inter.shape[0], inter.shape[1], inter.shape[2]]
-        out_name = base + '_64.binvox'
+        out_name = 'ShapeNetCore.v2/Collection/table/new_temp/' + base + '_64.binvox'
+        # out_name = base + '_' + str(order) + '_64.binvox'
 
-        with open(out_name, 'wb') as f:
-            model.write(f)
-
-
-def z_axis_pos():
-    file_list = glob.glob('BINVOX/INPUT/*.binvox')
-
-    for file in file_list:
-        base = os.path.basename(file)
-
-        with open(file, 'rb') as f:
-            model = binvox_rw.read_as_3d_array(f)
-
-        stop = 0
-        while stop <= 32:
-            if model.data[31][31][63 - stop]:
-                print(base, 63 - stop)
-                break
-            elif model.data[30][31][63 - stop] or model.data[32][31][63 - stop]:
-                print('hi')
-                break
-            stop += 1
-
-        out = np.zeros_like(model.data)
-        out[:, :, stop:64] = model.data[:, :, 0:64 - stop]
-        model.data = out
-        out_name = 'BINVOX/OUTPUT/' + base
-
+        # if not os.path.exists('ShapeNetCore.v2/Collection/table/binvox_64'):
+        #     os.makedirs('ShapeNetCore.v2/Collection/table/binvox_64')
         with open(out_name, 'wb') as f:
             model.write(f)
 
@@ -168,4 +167,4 @@ def main():
 
 
 if __name__ == "__main__":
-    binvox_downsample()
+    z_axis_pos()
