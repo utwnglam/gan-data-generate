@@ -15,10 +15,10 @@ import argparse
 import binvox_rw
 import moviepy.editor as mpy
 
-RESO = 40
-RATIO = 4
+RESO = 64
+RATIO = 2
 TOTAL = RESO * RATIO
-CutOff = 192
+CutOff = 128
 
 
 def method2_range100():
@@ -263,7 +263,8 @@ def interpolation(args):
         #
         #   INTERPOLATION PROCESS
         #
-        intermediate = np.zeros((256, 256, 3))
+        new = int(data.shape[0]/RATIO)
+        intermediate = np.zeros((new, new, 3))
         temp = RATIO * RATIO
         for a in range(intermediate.shape[0]):
             for b in range(intermediate.shape[1]):
@@ -318,18 +319,18 @@ def interpolation(args):
             mlab.view(azimuth=360 * t / duration)  # camera angle
             return mlab.screenshot(antialiased=True)  # return a RGB image
 
-        output = 'ViewResult/' + base + '_out.gif'
-        animation = mpy.VideoClip(make_frame, duration=duration).resize(0.5)
-        # Video generation takes 10 seconds, GIF generation takes 25s
-        animation.write_gif(output, fps=25)
+        output = 'ViewResult/' + base + '_out.png'
+        # animation = mpy.VideoClip(make_frame, duration=duration).resize(0.5)
+        # # Video generation takes 10 seconds, GIF generation takes 25s
+        # animation.write_gif(output, fps=25)
 
-        # GUI().process_events()
-        # imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
-        # img_RGB = np.uint8(imgmap_RGB)
-        # img_RGB = Image.fromarray(img_RGB)
-        # if not os.path.exists('ViewResult'):
-        #     os.makedirs('ViewResult')
-        # img_RGB.save(output)
+        GUI().process_events()
+        imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
+        img_RGB = np.uint8(imgmap_RGB)
+        img_RGB = Image.fromarray(img_RGB)
+        if not os.path.exists('ViewResult'):
+            os.makedirs('ViewResult')
+        img_RGB.save(output)
 
         # mlab.show()
         mlab.clf()
@@ -359,7 +360,7 @@ def main():
     parser = argparse.ArgumentParser(description='Finding the centre point of the 3D cube')
     parser.add_argument('-a', '--angle', type=str, default='iso', choices=['x', 'y'],
                         help='The viewing angle of 3D space')
-    parser.add_argument('-c', '--cutoff', type=int, default=192, help='The cut off value of the colour range')
+    parser.add_argument('-c', '--cutoff', type=int, default=128, help='The cut off value of the colour range')
     args = parser.parse_args()
     # find_centre(args)
     interpolation(args)

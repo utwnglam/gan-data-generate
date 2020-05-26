@@ -15,7 +15,7 @@ max_cutoff = 208
 
 def binvox_viewer():
     # file_list = glob.glob('BINVOX/DATA/BINVOX_desk/*.binvox')
-    file_list = glob.glob('*.binvox')
+    file_list = glob.glob('BINVOX/INPUT/*.binvox')
 
     for file in file_list:
         base = os.path.basename(file)
@@ -27,7 +27,7 @@ def binvox_viewer():
         #
         with open(file, 'rb') as f:
             model = binvox_rw.read_as_3d_array(f)
-        print('The input binvox shape is ' + str(model.data.shape))
+        # print(np.any(model.data[:, :, 63]))
         xx, yy, zz = np.where(model.data == 1)
 
         fig = mlab.figure(1, size=(700, 700))
@@ -43,7 +43,7 @@ def binvox_viewer():
         mlab.axes(figure=fig, nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
         mlab.outline(extent=(0, 64, 0, 64, 0, 64))
 
-        output = 'View/' + base + '_3D.png'
+        output = 'BINVOX/OUTPUT/' + base + '_3D.png'
         GUI().process_events()
         imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
         img_RGB = np.uint8(imgmap_RGB)

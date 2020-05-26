@@ -10,7 +10,7 @@ import sys
 import glob
 import argparse
 
-
+import moviepy.editor as mpy
 from pyface.api import GUI
 from mayavi import mlab
 
@@ -20,9 +20,7 @@ TOTAL = RESO * RATIO
 CutOff = 128
 
 def visualize():
-    file_location = 'desk'
-    total_location = 'ViewResult_folder/' + file_location
-    file_list = glob.glob(total_location + '/*.png')
+    file_list = glob.glob('voxel_result/*.png')
 
     for file in file_list:
         img = Image.open(file)
@@ -70,16 +68,17 @@ def visualize():
         mlab.axes(figure=fig, nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
         mlab.outline(extent=(0, 64, 0, 64, 0, 64))
 
-        GUI().process_events()
-        imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
-        img_RGB = np.uint8(imgmap_RGB)
-        img_RGB = Image.fromarray(img_RGB)
+        duration = 6  # duration of the animation in seconds (it will loop)
 
-        if not os.path.exists('ViewResult_folder_slice'):
-            os.makedirs('ViewResult_folder_slice')
-        if not os.path.exists('ViewResult_folder_slice/' + file_location):
-            os.makedirs('ViewResult_folder_slice/' + file_location)
-        img_RGB.save('ViewResult_folder_slice/' + file_location + '/' + basename)
+        def make_frame(t):
+            """ Generates and returns the frame for time t. """
+            mlab.view(azimuth=360 * t / duration)  # camera angle
+            return mlab.screenshot(antialiased=True)  # return a RGB image
+
+        output = 'ViewResult/' + basename + '_out.gif'
+        animation = mpy.VideoClip(make_frame, duration=duration).resize(0.5)
+        animation.write_gif(output, fps=25)
+
         mlab.clf()
 
 def main():
