@@ -20,7 +20,7 @@ TOTAL = RESO * RATIO
 CutOff = 128
 
 def visualize():
-    file_location = 'desk'
+    file_location = 'test'
     total_location = 'ViewResult_folder/' + file_location
     file_list = glob.glob(total_location + '/*.png')
 
