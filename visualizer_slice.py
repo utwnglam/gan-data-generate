@@ -20,8 +20,8 @@ TOTAL = RESO * RATIO
 CutOff = 128
 
 def visualize():
-    file_location = 'test'
-    total_location = 'ViewResult_folder/' + file_location
+    file_location = 'first'
+    total_location = 'ViewINPUT_folder/' + file_location
     file_list = glob.glob(total_location + '/*.png')
 
     for file in file_list:
@@ -41,7 +41,7 @@ def visualize():
                             colors[a][b][ (7 - i) * 8 + ( 7 - j)] = [0,0,0]
                         else:
                             colors[a][b][ (7 - i) * 8 + ( 7 - j)] = [0,0,0]
-                        
+
         # print(reshape_png)
         # colors = np.rot90(colors, 2, (0,1))
         # for i in range(colors.shape[0]):
@@ -74,9 +74,6 @@ def visualize():
         imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
         img_RGB = np.uint8(imgmap_RGB)
         img_RGB = Image.fromarray(img_RGB)
-
-        if not os.path.exists('ViewResult_folder_slice'):
-            os.makedirs('ViewResult_folder_slice')
         if not os.path.exists('ViewResult_folder_slice/' + file_location):
             os.makedirs('ViewResult_folder_slice/' + file_location)
         img_RGB.save('ViewResult_folder_slice/' + file_location + '/' + basename)
