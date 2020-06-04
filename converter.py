@@ -159,6 +159,7 @@ def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'slice', gr
                         if np.all(rgb_2Darray[i * 64 + a][j * 64 + b] < cutoff):
                             boolean_table[a][b][num] = True
                             rgb_3Darray[a][b][num] = rgb_2Darray[i * 64 + a][j * 64 + b]
+
     elif(mode == 'professor'):
         boolean_table = np.zeros((64, 64, 64), dtype=bool)
         rgb_3Darray = np.zeros((64, 64, 64, 3))
@@ -173,9 +174,10 @@ def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'slice', gr
                         y_pixel = rgb_2Darray[511 + (y_pos // 8) * 64 + a][(y_pos - 8 * (y_pos // 8)) * 64 + z_pos]
                         z_pixel = rgb_2Darray[i * 64 + a][(j + 8) * 64 + b]
                         result = np.array([np.all(x_pixel < cutoff), np.all(y_pixel < cutoff), np.all(z_pixel < cutoff)])
-                        if np.all(result):
+                        if professor_judgement(result):
                             boolean_table[a][b][z_pos] = True
                             rgb_3Darray[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 255
+
     elif(mode == 'Hilbert_and_professor'):
         mapping = np.array([
         [1 ,2 ,15,16,17,20,21,22],
@@ -189,7 +191,6 @@ def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'slice', gr
     ])
         boolean_table = np.zeros((64, 64, 64), dtype=bool)
         rgb_3Darray = np.zeros((64, 64, 64, 3))
-
         for i in range(8):
             for j in range(8):
                 for a in range(64):
@@ -205,10 +206,12 @@ def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'slice', gr
                         z_pixel = rgb_2Darray[i * 64 + a][(j + 8) * 64 + b]
                         result = np.array([np.all(x_pixel < cutoff), np.all(y_pixel < cutoff), np.all(z_pixel < cutoff)])
 
-                        if np.all(result):
+                        if professor_judgement(result):
                             boolean_table[a][b][z_pos] = True
                             rgb_3Darray[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 255
+
     return rgb_3Darray, boolean_table
+
 def rgb_2Darray_to_rgb_2Darray():
     pass
 
@@ -223,7 +226,6 @@ def rgb_3Darray_to_boolean_table(rgb_3Darray, cutoff):
     return boolean_table
 
 def rgb_3Darray_and_boolean_table_to_3Dpng(rgb_3Darray, boolean_table):
-    print(boolean_table.shape)
     xx, yy, zz = np.where(boolean_table == 1)
     s = np.arange(len(xx))
     lut = np.zeros((len(xx), 4))
@@ -248,17 +250,26 @@ def rgb_3Darray_and_boolean_table_to_3Dpng(rgb_3Darray, boolean_table):
     imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
     img_RGB = np.uint8(imgmap_RGB)
     img_RGB = PIL.Image.fromarray(img_RGB)
-    # if not os.path.exists('ViewResult_folder_slice/' + file_location):
-    #     os.makedirs('ViewResult_folder_slice/' + file_location)
-    # img_RGB.save('ViewResult_folder_slice/' + file_location + '/' + basename)
     mlab.clf()
     return img_RGB
 
 def generated_img_to_png_array(generated_img, mode = 'slice'):
     generated_img_array = np.array(generated_img)
-    rgb_3Darray, boolean_table = rgb_2Darray_to_rgb_3Darray_and_boolean_table(generated_img_array, "Hilbert")
+    rgb_3Darray, boolean_table = rgb_2Darray_to_rgb_3Darray_and_boolean_table(generated_img_array, mode)
     png_array = rgb_3Darray_and_boolean_table_to_3Dpng(rgb_3Darray, boolean_table)
     return png_array
+
+def professor_judgement(xyz_result, choice=0):
+    if(choice == 0):
+        return np.any(xyz_result)
+    elif(choice == 1):
+        if(np.count_nonzero(xyz_result) >= 2):
+            return True
+        else:
+            return False
+    elif(choice == 2):
+        return np.all(xyz_result)
+
 
 def main():
     # parser = argparse.ArgumentParser()
@@ -271,8 +282,8 @@ def main():
     # returned_thing = PIL.Image.fromarray(returned_thing, 'RGB')
     # returned_thing.save("OUTPUT/testing.png")
     img = PIL.Image.open("INPUT/2d_seed0000.png")
-    data = generated_img_to_png_array(img, 'professor')
-    data.save('OUTPUT/test2.png')
+    data = generated_img_to_png_array(img, 'Hilbert_and_professor')
+    data.save('OUTPUT/test3.png')
 
 if __name__ == "__main__":
     main()
