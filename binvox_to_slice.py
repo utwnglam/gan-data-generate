@@ -16,9 +16,9 @@ def make_2D_grid_from_binvox(binvox_2D_grid):
     for row_index in range(binvox_2D_grid.shape[0]):
         for col_index in range(binvox_2D_grid.shape[1]):
             if binvox_2D_grid[row_index][col_index]:
-                insert_row.append([0,0,0]) 
+                insert_row.append([0, 0, 0])
             else:
-                insert_row.append([255,255,255])
+                insert_row.append([255, 255, 255])
         RGB_2d_grid.append(insert_row)
         insert_row = []
     return np.array(RGB_2d_grid)
@@ -38,7 +38,7 @@ def make_2D_grid_flatten(args):
         for z_level in reversed(range(model.data.shape[2])):
             row_index = count//ROW_GRID
             col_index = count - row_index * ROW_GRID
-            current_2D_gird = make_2D_grid_from_binvox(model.data[:,:,z_level])
+            current_2D_gird = make_2D_grid_from_binvox(model.data[:, :, z_level])
             current_2D_gird = np.uint8(current_2D_gird)
             canvas.paste(PIL.Image.fromarray(current_2D_gird, 'RGB'), (col_index * SPACE,row_index * SPACE))
             count += 1
