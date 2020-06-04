@@ -62,19 +62,48 @@ def professor(data):
 
     for i in range(8):
         for j in range(8):
-            z_num = (7 - i) * 8 + (7 - j)
             for a in range(64):
                 for b in range(64):
+                    x_pos = 63 - a
+                    y_pos = 63 - b
+                    z_pos = (7 - i) * 8 + (7 - j)
 
-                    if np.all(data[i * 64 + a][j * 64 + b] < CutOff):
-                        furniture[a][b][num] = True
-                        colors[a][b][num] = data[i * 64 + a][j * 64 + b]
+                    x_pixel = data[(x_pos // 8) * 64 + b][(x_pos - 8 * (x_pos // 8)) * 64 + z_pos]
+                    y_pixel = data[511 + (y_pos // 8) * 64 + a][(y_pos - 8 * (y_pos // 8)) * 64 + z_pos]
+                    z_pixel = data[i * 64 + a][(j + 8) * 64 + b]
+                    result = np.array([np.all(x_pixel < CutOff), np.all(y_pixel < CutOff), np.all(z_pixel < CutOff)])
+
+                    if np.any(result):
+                        furniture[a][b][z_pos] = True
+                        colors[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 256
 
     return furniture, colors
 
 
-def hilbert_professor():
-    pass
+def hilbert_professor(data):
+    furniture = np.zeros((RESO, RESO, RESO), dtype=bool)
+    colors = np.zeros((RESO, RESO, RESO, 3))
+
+    for i in range(8):
+        for j in range(8):
+            for a in range(64):
+                for b in range(64):
+                    x_pos = 64 - a
+                    xofx, yofx = np.where(mapping == x_pos)
+                    y_pos = 64 - b
+                    xofy, yofy = np.where(mapping == y_pos)
+                    z_pos = 64 - mapping[i][j]
+
+                    x_pixel = data[xofx[0] * 64 + b][yofx[0] * 64 + z_pos]
+                    y_pixel = data[511 + (xofy[0] * 64) + a][(yofy[0] * 64) + z_pos]
+                    z_pixel = data[i * 64 + a][(j + 8) * 64 + b]
+                    result = np.array([np.all(x_pixel < CutOff), np.all(y_pixel < CutOff), np.all(z_pixel < CutOff)])
+
+                    if np.any(result):
+                        furniture[a][b][z_pos] = True
+                        colors[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 256
+
+    return furniture, colors
 
 
 def make_frame(t):
@@ -87,15 +116,22 @@ def make_frame(t):
 
 def visualize(args):
     file_list = glob.glob('voxel_result/*.png')
+    # file_location = 'first'
+    # total_location = 'ViewINPUT_folder/' + file_location
+    # file_list = glob.glob(total_location + '/*.png')
 
     for file in file_list:
         img = Image.open(file)
         basename = os.path.basename(file)
         basename = os.path.splitext(basename)[0]
         data = np.array(img)
-        print(basename, data.shape)
+        print(basename)
 
         furniture, colors = method_dict[args.mode](data)
+
+        # reshape_png = []
+        # print(reshape_png)
+        # colors = np.rot90(colors, 2, (0,1))
 
         xx, yy, zz = np.where(furniture == 1)
         s = np.arange(len(xx))
@@ -103,8 +139,6 @@ def visualize(args):
         for row in s:
             temp = np.append((colors[xx[row]][yy[row]][zz[row]] + (256 - 208)), 255)
             lut[row, :] = temp
-
-        # Plot the points, update its lookup table
         currfig = mlab.points3d(xx, yy, zz, s,
                                 scale_mode='none',
                                 mode="cube",
@@ -119,18 +153,28 @@ def visualize(args):
         mlab.axes(figure=fig, nb_labels=5, extent=(0, RESO, 0, RESO, 0, RESO))
         mlab.outline(extent=(0, RESO, 0, RESO, 0, RESO))
 
+        #
+        #   GIF SECTION
+        #
         # output = 'ViewResult/' + basename + '_out.gif'
         # animation = mpy.VideoClip(make_frame, duration=duration).resize(0.5)
         # animation.write_gif(output, fps=25)
 
-        output = 'ViewResult/' + basename + '_3D.png'
         GUI().process_events()
         imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
         img_RGB = np.uint8(imgmap_RGB)
         img_RGB = Image.fromarray(img_RGB)
+
+        #
+        #   SAVING SECTION
+        #
+        output = 'ViewResult/' + basename + '_3D.png'
         if not os.path.exists('ViewResult'):
             os.makedirs('ViewResult')
         img_RGB.save(output)
+        # if not os.path.exists('ViewResult_folder_slice/' + file_location):
+        #     os.makedirs('ViewResult_folder_slice/' + file_location)
+        # img_RGB.save('ViewResult_folder_slice/' + file_location + '/' + basename)
 
         mlab.clf()
 

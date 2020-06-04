@@ -68,7 +68,7 @@ def variation(args):
 
 
 def z_axis_pos():
-    file_list = glob.glob('BINVOX/INPUT/*.binvox')
+    file_list = glob.glob('INPUT/*.binvox')
 
     for file in file_list:
         base = os.path.basename(file)
@@ -86,7 +86,7 @@ def z_axis_pos():
         out = np.zeros_like(model.data, dtype=bool)
         out[:, :, (63-z):64] = model.data[:, :, 0:(z+1)]
         model.data = out
-        out_name = os.path.splitext(base)[0] + 'zup.binvox'
+        out_name = os.path.splitext(base)[0] + '_zup.binvox'
 
         with open(out_name, 'wb') as f:
             model.write(f)

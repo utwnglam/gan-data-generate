@@ -3,12 +3,12 @@ import binvox_rw
 import os
 import PIL.Image
 import numpy as np
-import sys
 import argparse
 
 SPACE = 64
 ROW_GRID = 8
 COL_GRID = 8
+
 
 def make_2D_grid_from_binvox(binvox_2D_grid):
     RGB_2d_grid = []
@@ -22,6 +22,7 @@ def make_2D_grid_from_binvox(binvox_2D_grid):
         RGB_2d_grid.append(insert_row)
         insert_row = []
     return np.array(RGB_2d_grid)
+
 
 def make_2D_grid_flatten(args):
     file_list = glob.glob(args.folder + '/*.binvox')
@@ -38,11 +39,12 @@ def make_2D_grid_flatten(args):
         for z_level in reversed(range(model.data.shape[2])):
             row_index = count//ROW_GRID
             col_index = count - row_index * ROW_GRID
-            current_2D_gird = make_2D_grid_from_binvox(model.data[:, :, z_level])
+            current_2D_gird = make_2D_grid_from_binvox(model.data[z_level,:,:])
             current_2D_gird = np.uint8(current_2D_gird)
             canvas.paste(PIL.Image.fromarray(current_2D_gird, 'RGB'), (col_index * SPACE,row_index * SPACE))
             count += 1
         canvas.save('OUTPUT/' + base + '.png')
+
 
 def make_2D_grid_Hilbert(args):
     mapping = [
@@ -75,6 +77,7 @@ def make_2D_grid_Hilbert(args):
             count += 1
         canvas.save('OUTPUT/' + base + '.png')
 
+
 def make_2D_grid_professor(args):
     file_list = glob.glob(args.folder + '/*.binvox')
     for file in file_list:
@@ -101,6 +104,7 @@ def make_2D_grid_professor(args):
             canvas.paste(PIL.Image.fromarray(current_2D_gird_z_axis, 'RGB'), (col_index * SPACE + SPACE * COL_GRID,row_index * SPACE))
             count += 1
         canvas.save('OUTPUT/' + base + '.png')
+
 
 def make_2D_grid_Hilbert_and_professor(args):
     mapping = [
@@ -139,6 +143,7 @@ def make_2D_grid_Hilbert_and_professor(args):
             count += 1
         canvas.save('OUTPUT/' + base + '.png')
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', type=str, help='enter \'flatten\'/ \'Hilbert\' \'professor\' \'Hilbert_and_professor\'')
@@ -153,6 +158,7 @@ def main():
         make_2D_grid_professor(args)
     elif args.mode == 'Hilbert_and_professor':
         make_2D_grid_Hilbert_and_professor(args)
+
 
 if __name__ == "__main__":
     main()

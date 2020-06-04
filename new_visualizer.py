@@ -15,7 +15,11 @@ max_cutoff = 208
 
 def binvox_viewer():
     # file_list = glob.glob('BINVOX/DATA/BINVOX_desk/*.binvox')
+<<<<<<< HEAD
+    file_list = glob.glob('INPUT/*.binvox')
+=======
     file_list = glob.glob('BINVOX/INPUT/*.binvox')
+>>>>>>> 4a0590adb37668a89a8f460949873ec2d1b67613
 
     for file in file_list:
         base = os.path.basename(file)

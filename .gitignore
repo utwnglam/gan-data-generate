@@ -19,3 +19,12 @@ binvox_rw.pyc
 *.pkl
 /out*
 
+/INPUT*
+/OUTPUT
+
+/TEST*
+/View*
+
+__pycache__
+
+/tmp
