@@ -75,7 +75,7 @@ def professor(data):
 
                     if np.any(result):
                         furniture[a][b][z_pos] = True
-                        colors[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 256
+                        colors[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 255
 
     return furniture, colors
 
@@ -101,7 +101,7 @@ def hilbert_professor(data):
 
                     if np.any(result):
                         furniture[a][b][z_pos] = True
-                        colors[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 256
+                        colors[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 255
 
     return furniture, colors
 

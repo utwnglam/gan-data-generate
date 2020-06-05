@@ -10,12 +10,13 @@ def boolean_grid2D_to_rgb_grid2D(boolean_grid2D):
     for row_index in range(boolean_grid2D.shape[0]):
         for col_index in range(boolean_grid2D.shape[1]):
             if boolean_grid2D[row_index][col_index]:
-                insert_row.append([0,0,0]) 
+                insert_row.append([0, 0, 0])
             else:
-                insert_row.append([255,255,255])
+                insert_row.append([255, 255, 255])
         RGB_2d_grid.append(insert_row)
         insert_row = []
     return np.array(RGB_2d_grid)
+
 
 def binvox_to_rgb_3Darray(binvox):
     boolean_table = binvox_to_boolean_table(binvox)
@@ -27,6 +28,7 @@ def binvox_to_rgb_3Darray(binvox):
                 if(boolean_table[i][j][k] == False):
                     rgb_3Darray[i][j][k] = [255, 255, 255]
     return rgb_3Darray
+
 
 def boolean_table_to_rgb_2Darray(boolean_table, mode = 'slice', space = 64, grid_length = 8):
     if(mode == 'slice'):
@@ -102,15 +104,18 @@ def boolean_table_to_rgb_2Darray(boolean_table, mode = 'slice', space = 64, grid
             count += 1
     return rgb_2Darray
 
+
 def binvox_to_rgb_2Darray(binvox, mode = 'slice'):
     boolean_table = binvox_to_boolean_table(binvox)
     rgb_2Darray = boolean_table_to_rgb_2Darray(boolean_table, mode)
     return rgb_2Darray
 
+
 def binvox_to_boolean_table(binvox):
     with open(binvox, 'rb') as f:
         model = binvox_rw.read_as_3d_array(f)
     return model.data
+
 
 def rgb_2Darray_to_rgb_3Darray(rgb_2Darray, mode = 'slice', grid_property = (64, 64, 8, 8), space = 64, cutoff = 128):
     row_grid_size, col_grid_size, num_of_row_grid, num_of_col_grid = grid_property
@@ -132,8 +137,10 @@ def rgb_2Darray_to_rgb_3Darray(rgb_2Darray, mode = 'slice', grid_property = (64,
     elif(mode == 'Hilbert_and_professor'):
         pass
 
+
 def rgb_2Darray_to_rgb_2Darray():
     pass
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -145,6 +152,7 @@ def main():
     returned_thing = np.uint8(returned_thing)
     returned_thing = PIL.Image.fromarray(returned_thing, 'RGB')
     returned_thing.save("OUTPUT/testing.png")
+
 
 if __name__ == "__main__":
     main()
