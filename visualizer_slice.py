@@ -133,6 +133,7 @@ def visualize(args):
         # print(reshape_png)
         # colors = np.rot90(colors, 2, (0,1))
 
+        fig = mlab.figure(1, size=(650, 690))
         xx, yy, zz = np.where(furniture == 1)
         s = np.arange(len(xx))
         lut = np.zeros((len(xx), 4))
@@ -143,11 +144,10 @@ def visualize(args):
                                 scale_mode='none',
                                 mode="cube",
                                 scale_factor=1)
-        fig = mlab.figure(1, size=(512, 555))
         currfig.module_manager.scalar_lut_manager.lut.number_of_colors = len(s)
         currfig.module_manager.scalar_lut_manager.lut.table = lut
 
-        mlab.view(azimuth=315, elevation=65, distance=140, focalpoint=(32, 32, 32))
+        mlab.view(azimuth=225, elevation=70, distance=140, focalpoint=(32, 32, 32))
         fig.scene.camera.parallel_projection = True
         fig.scene.camera.parallel_scale = 65  # smaller the number, greater zoom
         mlab.axes(figure=fig, nb_labels=5, extent=(0, RESO, 0, RESO, 0, RESO))
