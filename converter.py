@@ -31,8 +31,8 @@ def binvox_to_rgb_3Darray(binvox):
                     rgb_3Darray[i][j][k] = [255, 255, 255]
     return rgb_3Darray
 
-def boolean_table_to_rgb_2Darray(boolean_table, mode = 'slice', space = 64, grid_length = 8):
-    if(mode == 'slice'):
+def boolean_table_to_rgb_2Darray(boolean_table, mode = 'flatten', space = 64, grid_length = 8):
+    if(mode == 'flatten'):
         rgb_2Darray = np.zeros((space * grid_length, space * grid_length, 3))
         x_length, y_length, z_length = boolean_table.shape
         count = 0
@@ -105,7 +105,7 @@ def boolean_table_to_rgb_2Darray(boolean_table, mode = 'slice', space = 64, grid
             count += 1
     return rgb_2Darray
 
-def binvox_to_rgb_2Darray(binvox, mode = 'slice'):
+def binvox_to_rgb_2Darray(binvox, mode = 'flatten'):
     boolean_table = binvox_to_boolean_table(binvox)
     rgb_2Darray = boolean_table_to_rgb_2Darray(boolean_table, mode)
     return rgb_2Darray
@@ -115,9 +115,9 @@ def binvox_to_boolean_table(binvox):
         model = binvox_rw.read_as_3d_array(f)
     return model.data
 
-def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'slice', grid_property = (64, 64, 8, 8), space = 64, cutoff = 128):
+def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'flatten', grid_property = (64, 64, 8, 8), space = 64, cutoff = 128):
     row_grid_size, col_grid_size, num_of_row_grid, num_of_col_grid = grid_property
-    # if(mode == 'slice'):
+    # if(mode == 'flatten'):
     #     rgb_3Darray = np.zeros((space, space, space, 3))
     #     for i in range(num_of_row_grid):
     #         for j in range(num_of_col_grid):
@@ -127,7 +127,7 @@ def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'slice', gr
     #                         rgb_3Darray[a][b][((num_of_row_grid - 1) - i) * 8 + ((num_of_col_grid - 1) - j)] = rgb_2Darray[i * row_grid_size + a][j * col_grid_size + b] # I dont know 8 can be replaced by which variable
     #                     else:
     #                         rgb_3Darray[a][b][(num_of_row_grid - 1) * 8 + ((num_of_col_grid - 1) - j)] = [255,255,255]
-    if(mode == 'slice'):
+    if(mode == 'flatten'):
         boolean_table = np.zeros((64, 64, 64), dtype=bool)
         rgb_3Darray = np.zeros((64, 64, 64, 3))
         for i in range(8):
@@ -136,7 +136,7 @@ def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'slice', gr
                 for a in range(64):
                     for b in range(64):
                         if np.all(rgb_2Darray[i * 64 + a][j * 64 + b] < cutoff):
-                            rgb_3Darray[a][b][z_num] = True
+                            boolean_table[a][b][z_num] = True
                             rgb_3Darray[a][b][z_num] = rgb_2Darray[i * 64 + a][j * 64 + b]
     elif(mode == 'Hilbert'):
         mapping = np.array([
@@ -239,27 +239,25 @@ def rgb_3Darray_and_boolean_table_to_3Dpng(rgb_3Darray, boolean_table):
     fig = mlab.figure(1, size=(512, 555))
     currfig.module_manager.scalar_lut_manager.lut.number_of_colors = len(s)
     currfig.module_manager.scalar_lut_manager.lut.table = lut
-
     mlab.view(azimuth=315, elevation=65, distance=140, focalpoint=(32, 32, 32))
     fig.scene.camera.parallel_projection = True
     fig.scene.camera.parallel_scale = 65  # smaller the number, greater zoom
     mlab.axes(figure=fig, nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
     mlab.outline(extent=(0, 64, 0, 64, 0, 64))
-
     GUI().process_events()
     imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
     img_RGB = np.uint8(imgmap_RGB)
-    img_RGB = PIL.Image.fromarray(img_RGB)
+    # img_RGB = PIL.Image.fromarray(img_RGB)
     mlab.clf()
     return img_RGB
 
-def generated_img_to_png_array(generated_img, mode = 'slice'):
+def generated_img_to_png_array(generated_img, mode = 'flatten'):
     generated_img_array = np.array(generated_img)
     rgb_3Darray, boolean_table = rgb_2Darray_to_rgb_3Darray_and_boolean_table(generated_img_array, mode)
     png_array = rgb_3Darray_and_boolean_table_to_3Dpng(rgb_3Darray, boolean_table)
     return png_array
 
-def professor_judgement(xyz_result, choice=0):
+def professor_judgement(xyz_result, choice=1):
     if(choice == 0):
         return np.any(xyz_result)
     elif(choice == 1):
