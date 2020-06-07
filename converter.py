@@ -13,12 +13,13 @@ def boolean_grid2D_to_rgb_grid2D(boolean_grid2D):
     for row_index in range(boolean_grid2D.shape[0]):
         for col_index in range(boolean_grid2D.shape[1]):
             if boolean_grid2D[row_index][col_index]:
-                insert_row.append([0,0,0]) 
+                insert_row.append([0, 0, 0])
             else:
-                insert_row.append([255,255,255])
+                insert_row.append([255, 255, 255])
         RGB_2d_grid.append(insert_row)
         insert_row = []
     return np.array(RGB_2d_grid)
+
 
 def binvox_to_rgb_3Darray(binvox):
     boolean_table = binvox_to_boolean_table(binvox)
@@ -110,6 +111,7 @@ def binvox_to_rgb_2Darray(binvox, mode = 'flatten'):
     rgb_2Darray = boolean_table_to_rgb_2Darray(boolean_table, mode)
     return rgb_2Darray
 
+
 def binvox_to_boolean_table(binvox):
     with open(binvox, 'rb') as f:
         model = binvox_rw.read_as_3d_array(f)
@@ -138,7 +140,7 @@ def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'flatten', 
                         if np.all(rgb_2Darray[i * 64 + a][j * 64 + b] < cutoff):
                             boolean_table[a][b][z_num] = True
                             rgb_3Darray[a][b][z_num] = rgb_2Darray[i * 64 + a][j * 64 + b]
-    elif(mode == 'Hilbert'):
+    elif mode == 'Hilbert':
         mapping = np.array([
         [1 ,2 ,15,16,17,20,21,22],
         [4 ,3 ,14,13,18,19,24,23],
@@ -160,7 +162,7 @@ def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'flatten', 
                             boolean_table[a][b][num] = True
                             rgb_3Darray[a][b][num] = rgb_2Darray[i * 64 + a][j * 64 + b]
 
-    elif(mode == 'professor'):
+    elif mode == 'professor':
         boolean_table = np.zeros((64, 64, 64), dtype=bool)
         rgb_3Darray = np.zeros((64, 64, 64, 3))
         for i in range(8):
@@ -178,7 +180,7 @@ def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'flatten', 
                             boolean_table[a][b][z_pos] = True
                             rgb_3Darray[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 255
 
-    elif(mode == 'Hilbert_and_professor'):
+    elif mode == 'Hilbert_and_professor':
         mapping = np.array([
         [1 ,2 ,15,16,17,20,21,22],
         [4 ,3 ,14,13,18,19,24,23],
@@ -212,8 +214,10 @@ def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'flatten', 
 
     return rgb_3Darray, boolean_table
 
+
 def rgb_2Darray_to_rgb_2Darray():
     pass
+
 
 def rgb_3Darray_to_boolean_table(rgb_3Darray, cutoff):
     x, y, z = rgb_3Darray.shape
@@ -225,7 +229,9 @@ def rgb_3Darray_to_boolean_table(rgb_3Darray, cutoff):
                     boolean_table[i][j][k] = True
     return boolean_table
 
-def rgb_3Darray_and_boolean_table_to_3Dpng(rgb_3Darray, boolean_table):
+
+def rgb_3Darray_and_boolean_table_to_3Dpng(rgb_3Darray, boolean_table, space=64):
+    fig = mlab.figure(1, size=(650, 690))
     xx, yy, zz = np.where(boolean_table == 1)
     s = np.arange(len(xx))
     lut = np.zeros((len(xx), 4))
@@ -236,14 +242,15 @@ def rgb_3Darray_and_boolean_table_to_3Dpng(rgb_3Darray, boolean_table):
                             scale_mode='none',
                             mode="cube",
                             scale_factor=1)
-    fig = mlab.figure(1, size=(512, 555))
     currfig.module_manager.scalar_lut_manager.lut.number_of_colors = len(s)
     currfig.module_manager.scalar_lut_manager.lut.table = lut
-    mlab.view(azimuth=315, elevation=65, distance=140, focalpoint=(32, 32, 32))
+
+    mlab.view(azimuth=225, elevation=70, distance=140, focalpoint=(32, 32, 32))
     fig.scene.camera.parallel_projection = True
     fig.scene.camera.parallel_scale = 65  # smaller the number, greater zoom
-    mlab.axes(figure=fig, nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
-    mlab.outline(extent=(0, 64, 0, 64, 0, 64))
+    mlab.axes(figure=fig, nb_labels=5, extent=(0, space, 0, space, 0, space))
+    mlab.outline(extent=(0, space, 0, space, 0, space))
+
     GUI().process_events()
     imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
     img_RGB = np.uint8(imgmap_RGB)
@@ -257,7 +264,7 @@ def generated_img_to_png_array(generated_img, mode = 'flatten'):
     png_array = rgb_3Darray_and_boolean_table_to_3Dpng(rgb_3Darray, boolean_table)
     return png_array
 
-def professor_judgement(xyz_result, choice=1):
+def professor_judgement(xyz_result, choice=0):
     if(choice == 0):
         return np.any(xyz_result)
     elif(choice == 1):
@@ -282,6 +289,7 @@ def main():
     img = PIL.Image.open("INPUT/2d_seed0000.png")
     data = generated_img_to_png_array(img, 'Hilbert_and_professor')
     data.save('OUTPUT/test3.png')
+
 
 if __name__ == "__main__":
     main()
