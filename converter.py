@@ -6,6 +6,7 @@ import PIL.Image
 from pyface.api import GUI
 from mayavi import mlab
 
+import gpu_accelerator
 
 def boolean_grid2D_to_rgb_grid2D(boolean_grid2D):
     RGB_2d_grid = []
@@ -119,99 +120,24 @@ def binvox_to_boolean_table(binvox):
 
 def rgb_2Darray_to_rgb_3Darray_and_boolean_table(rgb_2Darray, mode = 'flatten', grid_property = (64, 64, 8, 8), space = 64, cutoff = 128):
     row_grid_size, col_grid_size, num_of_row_grid, num_of_col_grid = grid_property
-    # if(mode == 'flatten'):
-    #     rgb_3Darray = np.zeros((space, space, space, 3))
-    #     for i in range(num_of_row_grid):
-    #         for j in range(num_of_col_grid):
-    #             for a in range(row_grid_size):
-    #                 for b in range(col_grid_size):
-    #                     if np.all(rgb_2Darray[i * row_grid_size + a][j * col_grid_size + b] < cutoff):
-    #                         rgb_3Darray[a][b][((num_of_row_grid - 1) - i) * 8 + ((num_of_col_grid - 1) - j)] = rgb_2Darray[i * row_grid_size + a][j * col_grid_size + b] # I dont know 8 can be replaced by which variable
-    #                     else:
-    #                         rgb_3Darray[a][b][(num_of_row_grid - 1) * 8 + ((num_of_col_grid - 1) - j)] = [255,255,255]
+    mapping = np.array([
+        [1 ,2 ,15,16,17,20,21,22],
+        [4 ,3 ,14,13,18,19,24,23],
+        [5 ,8 ,9 ,12,31,30,25,26],
+        [6 ,7 ,10,11,32,29,28,27],
+        [59,58,55,54,33,36,37,38],
+        [60,57,56,53,34,35,40,39],
+        [61,62,51,52,47,46,41,42],
+        [64,63,50,49,48,45,44,43],
+    ])
     if(mode == 'flatten'):
-        boolean_table = np.zeros((64, 64, 64), dtype=bool)
-        rgb_3Darray = np.zeros((64, 64, 64, 3))
-        for i in range(8):
-            for j in range(8):
-                z_num = (7 - i) * 8 + (7 - j)
-                for a in range(64):
-                    for b in range(64):
-                        if np.all(rgb_2Darray[i * 64 + a][j * 64 + b] < cutoff):
-                            boolean_table[a][b][z_num] = True
-                            rgb_3Darray[a][b][z_num] = rgb_2Darray[i * 64 + a][j * 64 + b]
-    elif mode == 'Hilbert':
-        mapping = np.array([
-        [1 ,2 ,15,16,17,20,21,22],
-        [4 ,3 ,14,13,18,19,24,23],
-        [5 ,8 ,9 ,12,31,30,25,26],
-        [6 ,7 ,10,11,32,29,28,27],
-        [59,58,55,54,33,36,37,38],
-        [60,57,56,53,34,35,40,39],
-        [61,62,51,52,47,46,41,42],
-        [64,63,50,49,48,45,44,43],
-    ])
-        boolean_table = np.zeros((64, 64, 64), dtype=bool)
-        rgb_3Darray = np.zeros((64, 64, 64, 3))
-        for i in range(8):
-            for j in range(8):
-                num = 64 - mapping[i][j]
-                for a in range(64):
-                    for b in range(64):
-                        if np.all(rgb_2Darray[i * 64 + a][j * 64 + b] < cutoff):
-                            boolean_table[a][b][num] = True
-                            rgb_3Darray[a][b][num] = rgb_2Darray[i * 64 + a][j * 64 + b]
-
-    elif mode == 'professor':
-        boolean_table = np.zeros((64, 64, 64), dtype=bool)
-        rgb_3Darray = np.zeros((64, 64, 64, 3))
-        for i in range(8):
-            for j in range(8):
-                for a in range(64):
-                    for b in range(64):
-                        x_pos = 63 - a
-                        y_pos = 63 - b
-                        z_pos = (7 - i) * 8 + (7 - j)
-                        x_pixel = rgb_2Darray[(x_pos // 8) * 64 + b][(x_pos - 8 * (x_pos // 8)) * 64 + z_pos]
-                        y_pixel = rgb_2Darray[511 + (y_pos // 8) * 64 + a][(y_pos - 8 * (y_pos // 8)) * 64 + z_pos]
-                        z_pixel = rgb_2Darray[i * 64 + a][(j + 8) * 64 + b]
-                        result = np.array([np.all(x_pixel < cutoff), np.all(y_pixel < cutoff), np.all(z_pixel < cutoff)])
-                        if professor_judgement(result):
-                            boolean_table[a][b][z_pos] = True
-                            rgb_3Darray[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 255
-
-    elif mode == 'Hilbert_and_professor':
-        mapping = np.array([
-        [1 ,2 ,15,16,17,20,21,22],
-        [4 ,3 ,14,13,18,19,24,23],
-        [5 ,8 ,9 ,12,31,30,25,26],
-        [6 ,7 ,10,11,32,29,28,27],
-        [59,58,55,54,33,36,37,38],
-        [60,57,56,53,34,35,40,39],
-        [61,62,51,52,47,46,41,42],
-        [64,63,50,49,48,45,44,43],
-    ])
-        boolean_table = np.zeros((64, 64, 64), dtype=bool)
-        rgb_3Darray = np.zeros((64, 64, 64, 3))
-        for i in range(8):
-            for j in range(8):
-                for a in range(64):
-                    for b in range(64):
-                        x_pos = 64 - a
-                        xofx, yofx = np.where(mapping == x_pos)
-                        y_pos = 64 - b
-                        xofy, yofy = np.where(mapping == y_pos)
-                        z_pos = 64 - mapping[i][j]
-
-                        x_pixel = rgb_2Darray[xofx[0] * 64 + b][yofx[0] * 64 + z_pos]
-                        y_pixel = rgb_2Darray[511 + (xofy[0] * 64) + a][(yofy[0] * 64) + z_pos]
-                        z_pixel = rgb_2Darray[i * 64 + a][(j + 8) * 64 + b]
-                        result = np.array([np.all(x_pixel < cutoff), np.all(y_pixel < cutoff), np.all(z_pixel < cutoff)])
-
-                        if professor_judgement(result):
-                            boolean_table[a][b][z_pos] = True
-                            rgb_3Darray[a][b][z_pos] = (x_pixel + y_pixel + z_pixel) / 255
-
+        rgb_3Darray, boolean_table = gpu_accelerator.boolean_table_to_rgb_2Darray_flatten(rgb_2Darray, cutoff)
+    elif(mode == 'Hilbert'):
+        rgb_3Darray, boolean_table = gpu_accelerator.boolean_table_to_rgb_2Darray_Hilbert(rgb_2Darray, cutoff, mapping)
+    elif(mode == 'professor'):
+        rgb_3Darray, boolean_table = gpu_accelerator.boolean_table_to_rgb_2Darray_professor(rgb_2Darray, cutoff)
+    elif(mode == 'Hilbert_and_professor'):
+        rgb_3Darray, boolean_table = gpu_accelerator.boolean_table_to_rgb_2Darray_Hilbert_and_professor(rgb_2Darray, cutoff, mapping)
     return rgb_3Darray, boolean_table
 
 
@@ -231,7 +157,7 @@ def rgb_3Darray_to_boolean_table(rgb_3Darray, cutoff):
 
 
 def rgb_3Darray_and_boolean_table_to_3Dpng(rgb_3Darray, boolean_table, space=64):
-    fig = mlab.figure(1, size=(650, 690))
+    fig = mlab.figure(1, size=(512, 555))
     xx, yy, zz = np.where(boolean_table == 1)
     s = np.arange(len(xx))
     lut = np.zeros((len(xx), 4))
@@ -288,6 +214,7 @@ def main():
     # returned_thing.save("OUTPUT/testing.png")
     img = PIL.Image.open("INPUT/2d_seed0000.png")
     data = generated_img_to_png_array(img, 'Hilbert_and_professor')
+    data = PIL.Image.fromarray(data)
     data.save('OUTPUT/test3.png')
 
 
