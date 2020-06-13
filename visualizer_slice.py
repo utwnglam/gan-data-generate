@@ -11,7 +11,7 @@ from pyface.api import GUI
 from mayavi import mlab
 
 RESO = 64
-CutOff = 128
+CutOff = 192
 mapping = np.array([
         [1, 2, 15, 16, 17, 20, 21, 22],
         [4, 3, 14, 13, 18, 19, 24, 23],
@@ -35,7 +35,8 @@ def flatten(data):
                 for b in range(64):
                     if np.all(data[i * 64 + a][j * 64 + b] < CutOff):
                         furniture[a][b][z_num] = True
-                        colors[a][b][z_num] = data[i * 64 + a][j * 64 + b]
+                        temp = data[i * 64 + a][j * 64 + b] * 2
+                        colors[a][b][z_num] = temp
 
     return furniture, colors
 
@@ -138,7 +139,7 @@ def visualize(args):
         s = np.arange(len(xx))
         lut = np.zeros((len(xx), 4))
         for row in s:
-            temp = np.append((colors[xx[row]][yy[row]][zz[row]] + (256 - 208)), 255)
+            temp = np.append((colors[xx[row]][yy[row]][zz[row]]), 255)
             lut[row, :] = temp
         currfig = mlab.points3d(xx, yy, zz, s,
                                 scale_mode='none',
@@ -168,9 +169,9 @@ def visualize(args):
         #
         #   SAVING SECTION
         #
-        output = 'ViewResult/' + basename + '_3D.png'
-        if not os.path.exists('ViewResult'):
-            os.makedirs('ViewResult')
+        output = 'View/' + basename + '_3D.png'
+        if not os.path.exists('View'):
+            os.makedirs('View')
         img_RGB.save(output)
         # if not os.path.exists('ViewResult_folder_slice/' + file_location):
         #     os.makedirs('ViewResult_folder_slice/' + file_location)
@@ -180,7 +181,7 @@ def visualize(args):
 
 
 method_dict = {
-    "flatten": flatten,
+    "slice": flatten,
     "hilbert": hilbert,
     "professor": professor,
     "hilbert_and_professor": hilbert_professor
@@ -189,8 +190,8 @@ method_dict = {
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('mode', type=str, choices=["flatten", "hilbert", "professor", "hilbert_and_professor"],
-                        help='enter \'flatten\'/ \'hilbert\' \'professor\' \'hilbert_and_professor\'')
+    parser.add_argument('mode', type=str, choices=["slice", "hilbert", "professor", "hilbert_and_professor"],
+                        help='enter \'slice\'/ \'hilbert\' \'professor\' \'hilbert_and_professor\'')
     args = parser.parse_args()
     visualize(args)
 

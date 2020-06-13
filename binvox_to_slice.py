@@ -1,7 +1,7 @@
 import glob
 import binvox_rw
 import os
-import PIL.Image
+from PIL import Image
 import numpy as np
 import argparse
 
@@ -13,10 +13,16 @@ COL_GRID = 8
 def make_2D_grid_from_binvox(binvox_2D_grid):
     RGB_2d_grid = []
     insert_row = []
+    #   insert number
+    img = Image.open('wood' + str(128) + '.jpg')
+    img_data = np.array(img)
+
     for row_index in range(binvox_2D_grid.shape[0]):
         for col_index in range(binvox_2D_grid.shape[1]):
             if binvox_2D_grid[row_index][col_index]:
-                insert_row.append([0, 0, 0])
+                temp = img_data[row_index][col_index+64] // 2
+                insert_row.append(temp)
+                # insert_row.append([0, 0, 0])
             else:
                 insert_row.append([255, 255, 255])
         RGB_2d_grid.append(insert_row)
@@ -25,25 +31,29 @@ def make_2D_grid_from_binvox(binvox_2D_grid):
 
 
 def make_2D_grid_flatten(args):
-    file_list = glob.glob(args.folder + '/*.binvox')
+    # file_list = glob.glob('*.binvox')
+    file_list = glob.glob('voxel_result/*.binvox')
+
     for file in file_list:
         base = os.path.basename(file)
         print(base)
         base = os.path.splitext(base)[0]
+
         with open(file, 'rb') as f:
             model = binvox_rw.read_as_3d_array(f)
-        canvas = PIL.Image.new('RGB', ((SPACE * ROW_GRID), (SPACE * COL_GRID)), 'white')
-        if not os.path.exists('OUTPUT'):
-            os.makedirs('OUTPUT')
+        canvas = Image.new('RGB', ((SPACE * ROW_GRID), (SPACE * COL_GRID)), 'white')
+        # if not os.path.exists('OUTPUT'):
+        #     os.makedirs('OUTPUT')
+
         count = 0
         for z_level in reversed(range(model.data.shape[2])):
             row_index = count//ROW_GRID
             col_index = count - row_index * ROW_GRID
-            current_2D_gird = make_2D_grid_from_binvox(model.data[z_level,:,:])
+            current_2D_gird = make_2D_grid_from_binvox(model.data[:, :, z_level])
             current_2D_gird = np.uint8(current_2D_gird)
-            canvas.paste(PIL.Image.fromarray(current_2D_gird, 'RGB'), (col_index * SPACE,row_index * SPACE))
+            canvas.paste(Image.fromarray(current_2D_gird, 'RGB'), (col_index * SPACE, row_index * SPACE))
             count += 1
-        canvas.save('OUTPUT/' + base + '.png')
+        canvas.save('View/' + base + '.png')
 
 
 def make_2D_grid_Hilbert(args):
@@ -65,15 +75,15 @@ def make_2D_grid_Hilbert(args):
         base = os.path.splitext(base)[0]
         with open(file, 'rb') as f:
             model = binvox_rw.read_as_3d_array(f)
-        canvas = PIL.Image.new('RGB', ((SPACE * ROW_GRID), (SPACE * COL_GRID)), 'white')
+        canvas = Image.new('RGB', ((SPACE * ROW_GRID), (SPACE * COL_GRID)), 'white')
         if not os.path.exists('OUTPUT'):
             os.makedirs('OUTPUT')
         count = 1
         for z_level in reversed(range(model.data.shape[2])):
             row_index, col_index = np.where(mapping == count)
-            current_2D_gird = make_2D_grid_from_binvox(model.data[:,:,z_level])
+            current_2D_gird = make_2D_grid_from_binvox(model.data[:, :, z_level])
             current_2D_gird = np.uint8(current_2D_gird)
-            canvas.paste(PIL.Image.fromarray(current_2D_gird, 'RGB'), (col_index * SPACE,row_index * SPACE))
+            canvas.paste(Image.fromarray(current_2D_gird, 'RGB'), (col_index * SPACE,row_index * SPACE))
             count += 1
         canvas.save('OUTPUT/' + base + '.png')
 
@@ -86,22 +96,22 @@ def make_2D_grid_professor(args):
         base = os.path.splitext(base)[0]
         with open(file, 'rb') as f:
             model = binvox_rw.read_as_3d_array(f)
-        canvas = PIL.Image.new('RGB', ((SPACE * ROW_GRID * 2), (SPACE * COL_GRID * 2)), 'white')
+        canvas = Image.new('RGB', ((SPACE * ROW_GRID * 2), (SPACE * COL_GRID * 2)), 'white')
         if not os.path.exists('OUTPUT'):
             os.makedirs('OUTPUT')
         count = 0
         for level in reversed(range(model.data.shape[2])):
             row_index = count//ROW_GRID
             col_index = count - row_index * ROW_GRID
-            current_2D_gird_x_axis = make_2D_grid_from_binvox(model.data[level,:,:])
-            current_2D_gird_y_axis = make_2D_grid_from_binvox(model.data[:,level,:])
-            current_2D_gird_z_axis = make_2D_grid_from_binvox(model.data[:,:,level])
+            current_2D_gird_x_axis = make_2D_grid_from_binvox(model.data[level, :, :])
+            current_2D_gird_y_axis = make_2D_grid_from_binvox(model.data[:, level, :])
+            current_2D_gird_z_axis = make_2D_grid_from_binvox(model.data[:, :, level])
             current_2D_gird_x_axis = np.uint8(current_2D_gird_x_axis)
             current_2D_gird_y_axis = np.uint8(current_2D_gird_y_axis)
             current_2D_gird_z_axis = np.uint8(current_2D_gird_z_axis)
-            canvas.paste(PIL.Image.fromarray(current_2D_gird_x_axis, 'RGB'), (col_index * SPACE,row_index * SPACE))
-            canvas.paste(PIL.Image.fromarray(current_2D_gird_y_axis, 'RGB'), (col_index * SPACE,row_index * SPACE + ROW_GRID * SPACE))
-            canvas.paste(PIL.Image.fromarray(current_2D_gird_z_axis, 'RGB'), (col_index * SPACE + SPACE * COL_GRID,row_index * SPACE))
+            canvas.paste(Image.fromarray(current_2D_gird_x_axis, 'RGB'), (col_index * SPACE,row_index * SPACE))
+            canvas.paste(Image.fromarray(current_2D_gird_y_axis, 'RGB'), (col_index * SPACE,row_index * SPACE + ROW_GRID * SPACE))
+            canvas.paste(Image.fromarray(current_2D_gird_z_axis, 'RGB'), (col_index * SPACE + SPACE * COL_GRID,row_index * SPACE))
             count += 1
         canvas.save('OUTPUT/' + base + '.png')
 
@@ -125,39 +135,39 @@ def make_2D_grid_Hilbert_and_professor(args):
         base = os.path.splitext(base)[0]
         with open(file, 'rb') as f:
             model = binvox_rw.read_as_3d_array(f)
-        canvas = PIL.Image.new('RGB', ((SPACE * ROW_GRID * 2), (SPACE * COL_GRID * 2)), 'white')
+        canvas = Image.new('RGB', ((SPACE * ROW_GRID * 2), (SPACE * COL_GRID * 2)), 'white')
         if not os.path.exists('OUTPUT'):
             os.makedirs('OUTPUT')
         count = 1
         for level in reversed(range(model.data.shape[2])):
             row_index, col_index = np.where(mapping == count)
-            current_2D_gird_x_axis = make_2D_grid_from_binvox(model.data[level,:,:])
-            current_2D_gird_y_axis = make_2D_grid_from_binvox(model.data[:,level,:])
-            current_2D_gird_z_axis = make_2D_grid_from_binvox(model.data[:,:,level])
+            current_2D_gird_x_axis = make_2D_grid_from_binvox(model.data[level, :, :])
+            current_2D_gird_y_axis = make_2D_grid_from_binvox(model.data[:, level, :])
+            current_2D_gird_z_axis = make_2D_grid_from_binvox(model.data[:, :, level])
             current_2D_gird_x_axis = np.uint8(current_2D_gird_x_axis)
             current_2D_gird_y_axis = np.uint8(current_2D_gird_y_axis)
             current_2D_gird_z_axis = np.uint8(current_2D_gird_z_axis)
-            canvas.paste(PIL.Image.fromarray(current_2D_gird_x_axis, 'RGB'), (col_index * SPACE,row_index * SPACE))
-            canvas.paste(PIL.Image.fromarray(current_2D_gird_y_axis, 'RGB'), (col_index * SPACE,row_index * SPACE + ROW_GRID * SPACE))
-            canvas.paste(PIL.Image.fromarray(current_2D_gird_z_axis, 'RGB'), (col_index * SPACE + SPACE * COL_GRID,row_index * SPACE))
+            canvas.paste(Image.fromarray(current_2D_gird_x_axis, 'RGB'), (col_index * SPACE,row_index * SPACE))
+            canvas.paste(Image.fromarray(current_2D_gird_y_axis, 'RGB'), (col_index * SPACE,row_index * SPACE + ROW_GRID * SPACE))
+            canvas.paste(Image.fromarray(current_2D_gird_z_axis, 'RGB'), (col_index * SPACE + SPACE * COL_GRID,row_index * SPACE))
             count += 1
         canvas.save('OUTPUT/' + base + '.png')
 
 
+method_dict = {
+    "slice": make_2D_grid_flatten,
+    "hilbert": make_2D_grid_Hilbert,
+    "professor": make_2D_grid_professor,
+    "hilbert_professor": make_2D_grid_Hilbert_and_professor
+}
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('mode', type=str, help='enter \'flatten\'/ \'Hilbert\' \'professor\' \'Hilbert_and_professor\'')
-    parser.add_argument('folder', type=str, help='enter the target folder to scale/ convert to slice')
+    parser.add_argument('mode', type=str, help='enter \'slice\'/ \'hilbert\' \'professor\' \'hilbert_professor\'')
+    # parser.add_argument('folder', type=str, help='enter the target folder to scale/ convert to slice')
     args = parser.parse_args()
-
-    if args.mode == 'flatten':
-        make_2D_grid_flatten(args)
-    elif args.mode == 'Hilbert':
-        make_2D_grid_Hilbert(args)
-    elif args.mode == 'professor':
-        make_2D_grid_professor(args)
-    elif args.mode == 'Hilbert_and_professor':
-        make_2D_grid_Hilbert_and_professor(args)
+    method_dict[args.mode](args)
 
 
 if __name__ == "__main__":

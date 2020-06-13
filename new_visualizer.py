@@ -15,7 +15,7 @@ max_cutoff = 208
 
 def binvox_viewer():
     # file_list = glob.glob('BINVOX/DATA/BINVOX_desk/*.binvox')
-    file_list = glob.glob('INPUT/*.binvox')
+    file_list = glob.glob('voxel_result/*.binvox')
 
     for file in file_list:
         base = os.path.basename(file)
@@ -43,7 +43,8 @@ def binvox_viewer():
         mlab.axes(figure=fig, nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
         mlab.outline(extent=(0, 64, 0, 64, 0, 64))
 
-        output = 'BINVOX/OUTPUT/' + base + '_3D.png'
+        # output = 'BINVOX/OUTPUT/' + base + '_3D.png'
+        output = 'View/' + base + '_3D.png'
         GUI().process_events()
         imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
         img_RGB = np.uint8(imgmap_RGB)
@@ -68,7 +69,7 @@ def png_viewer(args):
         data = np.array(img)
         colors = np.resize(data, (space, space, space, 3))
         furniture = np.zeros((space, space, space))
-        fig = mlab.figure(1, size=(600, 600))
+        fig = mlab.figure(1, size=(650, 690))
 
         for i in range(colors.shape[0]):
             for j in range(colors.shape[1]):
@@ -118,13 +119,13 @@ def png_viewer(args):
         # animation = mpy.VideoClip(make_frame, duration=duration).resize(0.5)
         # animation.write_gif(output, fps=25)
 
-        output = 'BINVOX/OUTPUT/' + base + '_out.png'
+        output = 'View/' + base + '_out.png'
         GUI().process_events()
         imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
         img_RGB = np.uint8(imgmap_RGB)
         img_RGB = Image.fromarray(img_RGB)
-        if not os.path.exists('BINVOX/OUTPUT'):
-            os.makedirs('BINVOX/OUTPUT')
+        # if not os.path.exists('BINVOX/OUTPUT'):
+        #     os.makedirs('BINVOX/OUTPUT')
         img_RGB.save(output)
 
         mlab.clf()
