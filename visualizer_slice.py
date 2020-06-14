@@ -2,7 +2,6 @@ import numpy as np
 from PIL import Image
 
 import os
-import sys
 import glob
 import argparse
 
@@ -36,7 +35,10 @@ def flatten(data):
                     if np.all(data[i * 64 + a][j * 64 + b] < CutOff):
                         furniture[a][b][z_num] = True
                         temp = data[i * 64 + a][j * 64 + b] * 2
-                        colors[a][b][z_num] = temp
+                        if np.any(temp > 255):
+                            colors[a][b][z_num] = [255, 255, 255]
+                        else:
+                            colors[a][b][z_num] = temp
 
     return furniture, colors
 
@@ -52,7 +54,11 @@ def hilbert(data):
                 for b in range(64):
                     if np.all(data[i * 64 + a][j * 64 + b] < CutOff):
                         furniture[a][b][num] = True
-                        colors[a][b][num] = data[i * 64 + a][j * 64 + b]
+                        temp = data[i * 64 + a][j * 64 + b] * 2
+                        if np.any(temp > 255):
+                            colors[a][b][num] = [255, 255, 255]
+                        else:
+                            colors[a][b][num] = temp
 
     return furniture, colors
 
@@ -169,9 +175,9 @@ def visualize(args):
         #
         #   SAVING SECTION
         #
-        output = 'View/' + basename + '_3D.png'
-        if not os.path.exists('View'):
-            os.makedirs('View')
+        output = 'ViewResult/' + basename + '_3D.png'
+        if not os.path.exists('ViewResult'):
+            os.makedirs('ViewResult')
         img_RGB.save(output)
         # if not os.path.exists('ViewResult_folder_slice/' + file_location):
         #     os.makedirs('ViewResult_folder_slice/' + file_location)
