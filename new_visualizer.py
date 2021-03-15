@@ -9,8 +9,8 @@ import argparse
 import binvox_rw
 # import moviepy.editor as mpy
 
-space = 64
-max_cutoff = 208
+space = 40
+max_cutoff = 192
 
 
 def binvox_viewer():
@@ -67,9 +67,10 @@ def png_viewer(args):
         base = os.path.splitext(base)[0]
         img = Image.open(file)
         data = np.array(img)
+        data = data[::4, ::4, 0:]
         colors = np.resize(data, (space, space, space, 3))
         furniture = np.zeros((space, space, space))
-        fig = mlab.figure(1, size=(650, 690))
+        fig = mlab.figure(1, size=(650, 690), bgcolor=(0, 0, 0))
 
         for i in range(colors.shape[0]):
             for j in range(colors.shape[1]):
@@ -83,7 +84,8 @@ def png_viewer(args):
         s = np.arange(len(xx))
         lut = np.zeros((len(xx), 4))
         for row in s:
-            temp = np.append((colors[xx[row]][yy[row]][zz[row]] + (256-max_cutoff)), 255)
+            # temp = np.append((colors[xx[row]][yy[row]][zz[row]] + (256-max_cutoff)), 255)
+            temp = np.append((185, 208, 208), 255)
             lut[row, :] = temp
 
         # Plot the points, update its lookup table
@@ -97,16 +99,17 @@ def png_viewer(args):
         #
         #   MANIPULATING VIEWING RELATED SETTING
         #
+        centre = space / 2
         if args.angle == 'x':
-            mlab.view(azimuth=270, elevation=90, distance=140, focalpoint=(32, 32, 32))
+            mlab.view(azimuth=270, elevation=90, distance=140, focalpoint=(centre, centre, centre))
         elif args.angle == 'y':
-            mlab.view(azimuth=0, elevation=90, distance=140, focalpoint=(32, 32, 32))
+            mlab.view(azimuth=0, elevation=90, distance=140, focalpoint=(centre, centre, centre))
         elif args.angle == 'iso':
-            mlab.view(azimuth=315, elevation=65, distance=140, focalpoint=(32, 32, 32))
+            mlab.view(azimuth=315, elevation=65, distance=140, focalpoint=(centre, centre, centre))
         fig.scene.camera.parallel_projection = True
-        fig.scene.camera.parallel_scale = 65    # smaller the number, greater zoom
-        mlab.axes(figure=fig, nb_labels=5, extent=(0, 64, 0, 64, 0, 64))
-        mlab.outline(extent=(0, 64, 0, 64, 0, 64))
+        fig.scene.camera.parallel_scale = 50    # smaller the number, greater zoom
+        mlab.axes(figure=fig, nb_labels=5, extent=(0, space, 0, space, 0, space))
+        mlab.outline(extent=(0, space, 0, space, 0, space))
 
         duration = 6  # duration of the animation in seconds (it will loop)
 
@@ -119,7 +122,7 @@ def png_viewer(args):
         # animation = mpy.VideoClip(make_frame, duration=duration).resize(0.5)
         # animation.write_gif(output, fps=25)
 
-        output = 'View/' + base + '_out.png'
+        output = 'ViewResult/' + base + '_out.png'
         GUI().process_events()
         imgmap_RGB = mlab.screenshot(figure=fig, mode='rgb', antialiased=True)
         img_RGB = np.uint8(imgmap_RGB)

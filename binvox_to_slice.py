@@ -124,9 +124,9 @@ def make_2D_grid_professor(args):
         for level in reversed(range(model.data.shape[2])):
             row_index = count//ROW_GRID
             col_index = count - row_index * ROW_GRID
-            current_2D_gird_x_axis = make_2D_grid_from_binvox(model.data[level, :, :])
-            current_2D_gird_y_axis = make_2D_grid_from_binvox(model.data[:, level, :])
-            current_2D_gird_z_axis = make_2D_grid_from_binvox(model.data[:, :, level])
+            current_2D_gird_x_axis = make_2D_grid_from_binvox(model.data[level, :, :], 0)
+            current_2D_gird_y_axis = make_2D_grid_from_binvox(model.data[:, level, :], 0)
+            current_2D_gird_z_axis = make_2D_grid_from_binvox(model.data[:, :, level], 0)
             current_2D_gird_x_axis = np.uint8(current_2D_gird_x_axis)
             current_2D_gird_y_axis = np.uint8(current_2D_gird_y_axis)
             current_2D_gird_z_axis = np.uint8(current_2D_gird_z_axis)
@@ -162,9 +162,9 @@ def make_2D_grid_Hilbert_and_professor(args):
         count = 1
         for level in reversed(range(model.data.shape[2])):
             row_index, col_index = np.where(mapping == count)
-            current_2D_gird_x_axis = make_2D_grid_from_binvox(model.data[level, :, :])
-            current_2D_gird_y_axis = make_2D_grid_from_binvox(model.data[:, level, :])
-            current_2D_gird_z_axis = make_2D_grid_from_binvox(model.data[:, :, level])
+            current_2D_gird_x_axis = make_2D_grid_from_binvox(model.data[level, :, :], 0)
+            current_2D_gird_y_axis = make_2D_grid_from_binvox(model.data[:, level, :], 0)
+            current_2D_gird_z_axis = make_2D_grid_from_binvox(model.data[:, :, level], 0)
             current_2D_gird_x_axis = np.uint8(current_2D_gird_x_axis)
             current_2D_gird_y_axis = np.uint8(current_2D_gird_y_axis)
             current_2D_gird_z_axis = np.uint8(current_2D_gird_z_axis)
