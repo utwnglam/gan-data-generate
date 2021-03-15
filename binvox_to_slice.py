@@ -12,18 +12,22 @@ ROW_GRID = 8
 COL_GRID = 8
 
 
-def make_2D_grid_from_binvox(num, binvox_2D_grid):
+def make_2D_grid_from_binvox(binvox_2D_grid, first, second):
     RGB_2d_grid = []
     insert_row = []
 
-    img = Image.open('fine-tuned/' + str(num) + '.jpg')
-    img_data = np.array(img)
+    # img = Image.open('fine-tuned/' + str(num) + '.jpg')
+    # img_data = np.array(img)
 
     for row_index in range(binvox_2D_grid.shape[0]):
         for col_index in range(binvox_2D_grid.shape[1]):
             if binvox_2D_grid[row_index][col_index]:
-                temp = img_data[row_index][col_index] // 2
-                insert_row.append(temp)
+                if col_index < 16 or 31 < col_index < 48:
+                    insert_row.append(first)
+                else:
+                    insert_row.append(second)
+                # temp = img_data[row_index][col_index] // 2
+                # insert_row.append(temp)
                 # insert_row.append([0, 0, 0])
             else:
                 insert_row.append([255, 255, 255])
@@ -54,7 +58,7 @@ def make_2D_grid_flatten(args):
         for z_level in reversed(range(model.data.shape[2])):
             row_index = count//ROW_GRID
             col_index = count - row_index * ROW_GRID
-            current_2D_gird = make_2D_grid_from_binvox(temp, model.data[:, :, z_level])
+            current_2D_gird = make_2D_grid_from_binvox(model.data[:, :, z_level], temp)
             current_2D_gird = np.uint8(current_2D_gird)
             canvas.paste(Image.fromarray(current_2D_gird, 'RGB'), (col_index * SPACE, row_index * SPACE))
             count += 1
@@ -73,14 +77,21 @@ def make_2D_grid_Hilbert(args):
         [64,63,50,49,48,45,44,43],
     ]
     mapping = np.array(mapping)
-    file_list = glob.glob('../process_data/ShapeNetCore.v2/Collection/table_FirstSet_OnlyBinvox/*.binvox')
-    # file_list = glob.glob(args.folder + '/*.binvox')
+    file_list = glob.glob('2nd_table_binvox_zup/*.binvox')
+    # file_list = glob.glob('../process_data/ShapeNetCore.v2/Collection/table_FirstSet_OnlyBinvox/*.binvox')
+    # file_list = glob.glob(args.folder + 'voxel_result/*.binvox')
 
     for file in file_list:
         base = os.path.basename(file)
         print(base)
         base = os.path.splitext(base)[0]
-        temp = random.randint(1, 50)
+        # temp = random.randint(1, 50)
+        sequence = [0, 32, 64, 96, 128]
+        first = (random.choice(sequence), random.choice(sequence), random.choice(sequence))
+        second = (random.choice(sequence), random.choice(sequence), random.choice(sequence))
+        while np.array_equal(first, second):
+            print('testing')
+            second = (random.choice(sequence), random.choice(sequence), random.choice(sequence))
 
         with open(file, 'rb') as f:
             model = binvox_rw.read_as_3d_array(f)
@@ -91,7 +102,7 @@ def make_2D_grid_Hilbert(args):
         count = 1
         for z_level in reversed(range(model.data.shape[2])):
             row_index, col_index = np.where(mapping == count)
-            current_2D_gird = make_2D_grid_from_binvox(temp, model.data[:, :, z_level])
+            current_2D_gird = make_2D_grid_from_binvox(model.data[:, :, z_level], first, second)
             current_2D_gird = np.uint8(current_2D_gird)
             canvas.paste(Image.fromarray(current_2D_gird, 'RGB'), (col_index * SPACE, row_index * SPACE))
             count += 1
