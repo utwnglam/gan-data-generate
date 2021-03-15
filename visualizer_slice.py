@@ -12,10 +12,10 @@ from mayavi import mlab
 RESO = 64
 CutOff = 192
 mapping = np.array([
-        [1, 2, 15, 16, 17, 20, 21, 22],
-        [4, 3, 14, 13, 18, 19, 24, 23],
-        [5, 8, 9, 12, 31, 30, 25, 26],
-        [6, 7, 10, 11, 32, 29, 28, 27],
+        [1,  2,  15, 16, 17, 20, 21, 22],
+        [4,  3,  14, 13, 18, 19, 24, 23],
+        [5,  8,   9, 12, 31, 30, 25, 26],
+        [6,  7,  10, 11, 32, 29, 28, 27],
         [59, 58, 55, 54, 33, 36, 37, 38],
         [60, 57, 56, 53, 34, 35, 40, 39],
         [61, 62, 51, 52, 47, 46, 41, 42],
@@ -34,11 +34,12 @@ def flatten(data):
                 for b in range(64):
                     if np.all(data[i * 64 + a][j * 64 + b] < CutOff):
                         furniture[a][b][z_num] = True
-                        temp = data[i * 64 + a][j * 64 + b] * 2
-                        if np.any(temp > 255):
-                            colors[a][b][z_num] = [255, 255, 255]
-                        else:
-                            colors[a][b][z_num] = temp
+                        # temp = data[i * 64 + a][j * 64 + b] * 2
+                        # if np.any(temp > 255):
+                        #     colors[a][b][z_num] = [255, 255, 255]
+                        # else:
+                        #     colors[a][b][z_num] = temp
+                        colors[a][b][z_num] = [0, 0, 0]
 
     return furniture, colors
 
@@ -145,7 +146,7 @@ def visualize(args):
         s = np.arange(len(xx))
         lut = np.zeros((len(xx), 4))
         for row in s:
-            temp = np.append((colors[xx[row]][yy[row]][zz[row]]), 255)
+            temp = np.append((colors[xx[row]][yy[row]][zz[row]]) + 48, 255)
             lut[row, :] = temp
         currfig = mlab.points3d(xx, yy, zz, s,
                                 scale_mode='none',
@@ -154,7 +155,7 @@ def visualize(args):
         currfig.module_manager.scalar_lut_manager.lut.number_of_colors = len(s)
         currfig.module_manager.scalar_lut_manager.lut.table = lut
 
-        mlab.view(azimuth=225, elevation=70, distance=140, focalpoint=(32, 32, 32))
+        mlab.view(azimuth=225, elevation=70, distance=140, focalpoint=(RESO/2, RESO/2, RESO/2))
         fig.scene.camera.parallel_projection = True
         fig.scene.camera.parallel_scale = 65  # smaller the number, greater zoom
         mlab.axes(figure=fig, nb_labels=5, extent=(0, RESO, 0, RESO, 0, RESO))
